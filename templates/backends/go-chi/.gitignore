@@ -1,0 +1,15 @@
+bin/
+tmp/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+.env
+vendor/
+*.swp
+*.swo
+*~
+.DS_Store

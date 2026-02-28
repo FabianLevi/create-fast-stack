@@ -1,0 +1,22 @@
+# Node
+node_modules/
+*.log
+npm-debug.log*
+
+# Angular
+dist/
+.angular/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
+.DS_Store

@@ -1,0 +1,66 @@
+exclude = [
+  ".bzr",
+  ".direnv",
+  ".eggs",
+  ".git",
+  ".git-rewrite",
+  ".hg",
+  ".mypy_cache",
+  ".nox",
+  ".pants.d",
+  ".pytype",
+  ".ruff_cache",
+  ".svn",
+  ".tox",
+  ".venv",
+  "venv",
+  "__pypackages__",
+  "_build",
+  "buck-out",
+  "build",
+  "dist",
+  "node_modules",
+]
+
+line-length = 88
+indent-width = 4
+target-version = "py312"
+
+[lint]
+select = [
+  "F",      # pyflakes
+  "I",      # isort
+  "E",      # pycodestyle errors
+  "W",      # pycodestyle warnings
+  "ARG",    # flake8-unused-arguments
+  "T201",   # print statements
+  "D",      # pydocstyle (Google docstrings)
+  "ANN",    # flake8-annotations (type hints)
+  "B",      # flake8-bugbear
+  "C4",     # flake8-comprehensions
+  "UP",     # pyupgrade
+]
+fixable = ["I", "F", "UP"]
+ignore = [
+  "D100",   # Missing docstring in public module
+  "D104",   # Missing docstring in public package
+  "D107",   # Missing docstring in __init__
+  "B008",   # Do not perform function call in argument defaults (FastAPI Depends)
+]
+
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[lint.per-file-ignores]
+"tests/**/*.py" = ["E712", "ARG001", "D", "ANN"]
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.isort]
+known-first-party = ["api", "core", "schemas"]
+
+[format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
