@@ -32,7 +32,7 @@ async fn main() {
 
     // Start server
     let addr = format!("{}:{}", config.app_host, config.app_port);
-    tracing::info!("starting server on {addr}");
+    tracing::info!(env = %config.app_env, "starting server on {addr}");
 
     let listener = tokio::net::TcpListener::bind(&addr)
         .await

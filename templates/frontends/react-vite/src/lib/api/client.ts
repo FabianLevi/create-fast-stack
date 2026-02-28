@@ -1,6 +1,6 @@
 import { env } from '@/environment';
 
-export async function apiFetch<T>(
+export async function apiRequest<T>(
   path: string,
   init?: RequestInit,
 ): Promise<T> {

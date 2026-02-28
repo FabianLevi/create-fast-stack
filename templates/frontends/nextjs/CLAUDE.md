@@ -12,18 +12,18 @@
 ## Getting Started
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Server runs at `http://localhost:3000`.
 
 ## Commands
 
-- `npm run dev` — Development server with hot reload
-- `npm run build` — Build for production
-- `npm start` — Start production server
-- `npm run lint` — Run Next.js linter
+- `pnpm dev` — Development server with hot reload
+- `pnpm build` — Build for production
+- `pnpm start` — Start production server
+- `pnpm lint` — Run Next.js linter
 
 ## Project Structure
 

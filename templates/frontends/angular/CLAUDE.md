@@ -2,16 +2,16 @@
 
 ## Stack
 
-Angular 19, TypeScript 5.7, Tailwind CSS v4 (PostCSS), Vitest + @analogjs/vitest-angular, angular-eslint, Prettier
+Angular 19, TypeScript 5.7–5.8 (Angular requires <5.9), Tailwind CSS v4 (PostCSS), Vitest + @analogjs/vitest-angular, angular-eslint, Prettier
 
 ## Commands
 
-- `npm install` — install dependencies
-- `npm start` — start dev server (port 4200)
-- `npm run build` — build for production (output: `dist/`)
-- `npm run lint` — run angular-eslint
-- `npm run test` — run tests in watch mode
-- `npm run test:run` — run tests once
+- `pnpm install` — install dependencies
+- `pnpm start` — start dev server (port 4200)
+- `pnpm build` — build for production (output: `dist/`)
+- `pnpm lint` — run angular-eslint
+- `pnpm test` — run tests in watch mode
+- `pnpm test:run` — run tests once
 
 ## Project Structure
 

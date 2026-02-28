@@ -4,7 +4,11 @@ use axum::{http::StatusCode, response::IntoResponse, Json};
 use serde_json::json;
 
 /// Application-level error type.
+///
+/// Variants are available for handlers to return typed HTTP errors.
+/// Extend this enum as new error cases are needed.
 #[derive(Debug, thiserror::Error)]
+#[allow(dead_code)]
 pub enum AppError {
     /// Internal server error.
     #[error("internal server error")]

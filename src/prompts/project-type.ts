@@ -2,21 +2,30 @@
  * Project type selection prompt
  */
 
-import { multiselect, cancel, isCancel } from "@clack/prompts";
-import { PROJECT_TYPES } from "../constants.js";
+import { cancel } from "@clack/prompts";
+import { customMultiselect, isCancel } from "./custom-multiselect.js";
+import { PROJECT_TYPES, COMING_SOON_TYPES } from "../constants.js";
 import type { ProjectType } from "../types.js";
 
 /**
  * Prompt for project types (Backend, Frontend)
- * Returns array of selected types or exits if cancelled
+ * Coming soon items shown as dimmed, non-selectable options
  */
 export async function promptProjectTypes(): Promise<ProjectType[]> {
-  const userSelectedTypes = await multiselect({
+  const userSelectedTypes = await customMultiselect({
     message: "What do you want to create? (select all that apply)",
-    options: PROJECT_TYPES.map((type) => ({
-      value: type.value,
-      label: type.label,
-    })),
+    options: [
+      ...PROJECT_TYPES.map((type) => ({
+        value: type.value,
+        label: type.label,
+      })),
+      ...COMING_SOON_TYPES.map((type) => ({
+        value: type.value,
+        label: type.label,
+        hint: "coming soon",
+        disabled: true,
+      })),
+    ],
     required: true,
   });
 

@@ -1,14 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { apiFetch } from '@/lib/api';
-
-interface HealthResponse {
-  status: string;
-}
+import { fetchHealth } from '@/lib/api/health';
 
 export function useHealth() {
   return useQuery({
     queryKey: ['health'],
-    queryFn: () => apiFetch<HealthResponse>('/health'),
+    queryFn: fetchHealth,
   });
 }

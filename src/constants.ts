@@ -97,16 +97,16 @@ export const FRONTEND_FRAMEWORKS: Record<FrontendFramework, FrameworkMeta> = {
     label: "Next.js",
     type: PROJECT_TYPE.FRONTEND as ProjectType,
     defaultPort: 3000,
-    installCommand: "npm install",
-    devCommand: "npm run dev",
+    installCommand: "pnpm install",
+    devCommand: "pnpm dev",
   },
   [FRONTEND_FRAMEWORK.ANGULAR]: {
     id: FRONTEND_FRAMEWORK.ANGULAR,
     label: "Angular 19",
     type: PROJECT_TYPE.FRONTEND as ProjectType,
     defaultPort: 4200,
-    installCommand: "npm install",
-    devCommand: "npm start",
+    installCommand: "pnpm install",
+    devCommand: "pnpm start",
   },
 };
 
@@ -116,6 +116,12 @@ export const FRONTEND_FRAMEWORKS: Record<FrontendFramework, FrameworkMeta> = {
 export const PROJECT_TYPES: Array<{ value: ProjectType; label: string }> = [
   { value: PROJECT_TYPE.BACKEND, label: "Backend" },
   { value: PROJECT_TYPE.FRONTEND, label: "Frontend" },
-  // future: { value: PROJECT_TYPE.CLI, label: "CLI" },
-  // future: { value: PROJECT_TYPE.INFRA, label: "Infrastructure" },
+];
+
+/**
+ * Project types shown in prompt but not yet implemented
+ */
+export const COMING_SOON_TYPES: Array<{ value: string; label: string }> = [
+  { value: "infrastructure", label: "Infrastructure" },
+  { value: "cli", label: "CLI" },
 ];
