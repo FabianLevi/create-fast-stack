@@ -1,0 +1,90 @@
+# Instructions
+
+## Stack
+
+SvelteKit 2, Svelte 5, TypeScript 5.8, Tailwind CSS v4, Vitest{{#if (includes selectedAddons "biome")}}, Biome{{else}}, ESLint 9, Prettier{{/if}}
+
+{{#if isCustom}}## Configuration
+
+- **Runtime**: {{runtime}}
+- **Package Manager**: {{packageManager}}
+{{#if (gt (length selectedAddons) 0)}}- **Addons**: {{#each selectedAddons}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{/if}}
+{{/if}}
+
+## Commands
+
+{{#if (eq packageManager "npm")}}- `npm install` — install dependencies
+- `npm run dev` — start dev server (port 5173)
+- `npm run build` — build for production
+- `npm run preview` — preview production build
+- `npm run check` — run svelte-check type checking
+- `npm run lint` — run {{#if (includes selectedAddons "biome")}}Biome (lint + format){{else}}ESLint{{/if}}
+- `npm test` — run tests once
+- `npm run test:watch` — run tests in watch mode{{else if (eq packageManager "bun")}}- `bun install` — install dependencies
+- `bun run dev` — start dev server (port 5173)
+- `bun run build` — build for production
+- `bun run preview` — preview production build
+- `bun run check` — run svelte-check type checking
+- `bun run lint` — run {{#if (includes selectedAddons "biome")}}Biome (lint + format){{else}}ESLint{{/if}}
+- `bun run test` — run tests once
+- `bun run test:watch` — run tests in watch mode{{else}}- `pnpm install` — install dependencies
+- `pnpm dev` — start dev server (port 5173)
+- `pnpm build` — build for production
+- `pnpm preview` — preview production build
+- `pnpm check` — run svelte-check type checking
+- `pnpm lint` — run {{#if (includes selectedAddons "biome")}}Biome (lint + format){{else}}ESLint{{/if}}
+- `pnpm test` — run tests once
+- `pnpm test:watch` — run tests in watch mode{{/if}}
+
+## Project Structure
+
+```
+src/
+├── lib/
+│   ├── components/ui/     # Reusable UI components (Svelte 5 runes)
+│   ├── api/client.ts      # Base apiRequest() — fetch wrapper
+│   ├── api/health.ts      # fetchHealth() — pure function
+│   ├── environment.ts     # Environment variable access
+│   └── utils.ts           # cn() utility for class merging
+├── routes/
+│   ├── +layout.svelte     # Root layout (imports app.css)
+│   └── +page.svelte       # Home page (health check UI)
+├── app.html               # HTML shell
+├── app.css                # Tailwind imports + theme tokens
+└── app.d.ts               # SvelteKit type declarations
+```
+
+## API Layer
+
+```
+lib/api/client.ts      → Base fetch wrapper (URL, error handling)
+lib/api/{domain}.ts    → Pure async functions per domain (fetchHealth, etc.)
+```
+
+API functions are **pure** — no Svelte reactivity, no runes. Testable in isolation. Called from components via `$effect` or event handlers.
+
+## Conventions
+
+- Components: PascalCase files for Svelte components (e.g. `Button.svelte`, `Card.svelte`)
+- Files: kebab-case for non-component files (e.g. `api-client.ts`, `environment.ts`)
+- Imports: use `$lib/` alias (e.g. `import { cn } from "$lib/utils"`)
+- Import order: builtin > external > internal > parent > sibling > index{{#if (includes selectedAddons "biome")}} (enforced by Biome){{else}} (enforced by eslint-plugin-perfectionist){{/if}}
+- Env vars: `VITE_*` prefix, accessed via `src/lib/environment.ts`
+- Styling: Tailwind classes + `cn()` for conditional merging
+- Type imports: `import type { ... }`
+- Runes: use `$state()`, `$derived()`, `$effect()`, `$props()` (Svelte 5)
+- Snippets: use `{@render children()}` instead of `<slot/>`
+- Routing: file-based via `src/routes/` (+page.svelte, +layout.svelte, +server.ts)
+
+## Key rules
+
+- No `any` types — use `unknown`
+- Early returns, no deep nesting
+- Const types pattern for objects (`as const`)
+- Strict mode enabled
+- Use Svelte 5 runes syntax exclusively — no legacy `let` exports or `$:` reactivity
+{{#if (includes selectedAddons "biome")}}- Pre-commit hook runs biome check on staged files{{else}}- Pre-commit hook runs eslint + prettier on staged files{{/if}}
+
+## Backend connectivity
+
+App fetches `env.backendUrl/health` on mount (default: http://localhost:8000). Backend should respond with `{ "status": "ok" }`.

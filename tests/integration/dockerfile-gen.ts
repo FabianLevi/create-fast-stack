@@ -52,6 +52,11 @@ const DEV_COMMANDS: Record<FrontendFramework, Record<PackageManager, DevCmd>> = 
     npm: ["npx", "ng", "serve", "--host", "0.0.0.0"],
     bun: ["bunx", "ng", "serve", "--host", "0.0.0.0"],
   },
+  svelte: {
+    pnpm: ["pnpm", "dev", "--host", "0.0.0.0"],
+    npm: ["npx", "vite", "dev", "--host", "0.0.0.0"],
+    bun: ["bunx", "vite", "dev", "--host", "0.0.0.0"],
+  },
 };
 
 /**

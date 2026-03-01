@@ -57,7 +57,7 @@ APP_WORKERS=1
 - Shared infra in `src/common/` (filters, exceptions, middleware)
 - Config in `src/config/`
 - Use `@Injectable()` for services, `@Controller()` for controllers
-- CORS enabled for localhost:5173 (Vite) and localhost:3000 (Next.js)
+- CORS enabled for all origins (`*`)
 
 ## Adding a New Feature
 

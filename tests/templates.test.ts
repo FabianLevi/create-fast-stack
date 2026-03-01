@@ -437,6 +437,99 @@ describe("Backend Templates", () => {
       }
     });
   });
+
+  describe("dotnet-aspnetcore", () => {
+    const templatePath = path.join(TEMPLATES_DIR, "backends", "dotnet-aspnetcore");
+
+    test("template directory exists", async () => {
+      const exists = await fileExists(templatePath);
+      expect(exists).toBe(true);
+    });
+
+    test("required files exist", async () => {
+      const requiredFiles = [
+        "Program.cs",
+        "App.csproj",
+        "appsettings.json",
+        "Modules/Health/HealthModule.cs",
+        ".env.example",
+        ".gitignore",
+        "README.md",
+        "CLAUDE.md",
+      ];
+
+      for (const file of requiredFiles) {
+        const filePath = path.join(templatePath, file);
+        const exists = await fileExists(filePath);
+        expect(exists).toBe(true);
+      }
+    });
+
+    test("App.csproj is valid XML and contains Carter dependency", async () => {
+      const content = await readText(path.join(templatePath, "App.csproj"));
+      expect(content).toContain("<Project");
+      expect(content).toContain("Carter");
+      expect(content).toContain("Serilog");
+    });
+
+    test("HealthModule.cs uses TypedResults and record DTOs", async () => {
+      const filePath = path.join(templatePath, "Modules", "Health", "HealthModule.cs");
+      const content = await readText(filePath);
+      expect(content).toContain("TypedResults.Ok");
+      expect(content).toContain("public record HealthResponse");
+      expect(content).toContain("public record HelloResponse");
+      expect(content).toContain("[property: JsonPropertyName");
+      expect(content).toContain("JsonPropertyName(\"status\")");
+      expect(content).toContain("JsonPropertyName(\"request_id\")");
+      expect(content).toContain("JsonPropertyName(\"message\")");
+    });
+
+    test("HealthModule.cs has proper XML doc comments", async () => {
+      const filePath = path.join(templatePath, "Modules", "Health", "HealthModule.cs");
+      const content = await readText(filePath);
+      expect(content).toContain("/// <summary>");
+      expect(content).toContain("/// </summary>");
+      expect(content).toContain("/// <param name=");
+      expect(content).toContain("/// <returns>");
+    });
+
+    test("HealthModule.cs contains both /health and /hello endpoints", async () => {
+      const filePath = path.join(templatePath, "Modules", "Health", "HealthModule.cs");
+      const content = await readText(filePath);
+      expect(content).toContain('MapGet("/health"');
+      expect(content).toContain('MapGet("/hello"');
+      expect(content).toContain("private static Ok<HealthResponse> Health");
+      expect(content).toContain("private static Ok<HelloResponse> Hello");
+    });
+
+    test("HealthModule.cs uses System.Text.Json.Serialization", async () => {
+      const filePath = path.join(templatePath, "Modules", "Health", "HealthModule.cs");
+      const content = await readText(filePath);
+      expect(content).toContain("using System.Text.Json.Serialization;");
+    });
+
+    test(".env.example contains APP_PORT", async () => {
+      const content = await readText(path.join(templatePath, ".env.example"));
+      expect(content).toContain("APP_PORT");
+    });
+
+    test("CLAUDE.md documents TypedResults pattern", async () => {
+      const filePath = path.join(templatePath, "CLAUDE.md");
+      const content = await readText(filePath);
+      expect(content).toContain("TypedResults");
+      expect(content).toContain("record");
+      expect(content).toContain("JsonPropertyName");
+    });
+
+    test("no leftover {{ in any file", async () => {
+      const files = await fs.readdir(templatePath, { recursive: true });
+      for (const file of files) {
+        const filePath = path.join(templatePath, file as string);
+        const hasUnresolved = await hasUnresolvedVars(filePath);
+        expect(hasUnresolved).toBe(false);
+      }
+    });
+  });
 });
 
 describe("Frontend Templates", () => {
@@ -553,6 +646,9 @@ describe("Frontend Templates", () => {
         "package.json",
         "tsconfig.json",
         "next.config.ts",
+        "eslint.config.mjs",
+        ".prettierrc",
+        ".vscode/extensions.json",
         ".env.example",
         ".gitignore",
         "README.md",
@@ -564,6 +660,59 @@ describe("Frontend Templates", () => {
         // Use fileExistsOrHbs to allow .hbs versions
         const exists = await fileExistsOrHbs(filePath);
         expect(exists).toBe(true);
+      }
+    });
+
+    test("eslint.config.mjs uses flat config with required plugins", async () => {
+      const content = await readText(path.join(templatePath, "eslint.config.mjs"));
+      expect(content).toContain("eslint-config-next/core-web-vitals");
+      expect(content).toContain("eslint-config-next/typescript");
+      expect(content).toContain("eslint-config-prettier");
+      expect(content).toContain("eslint-plugin-perfectionist");
+      expect(content).toContain(".next");
+      expect(content).toContain("argsIgnorePattern");
+      expect(content).toContain("sort-imports");
+    });
+
+    test(".prettierrc matches react-vite config", async () => {
+      const content = await readText(path.join(templatePath, ".prettierrc"));
+      const config = JSON.parse(content);
+      expect(config.semi).toBe(true);
+      expect(config.singleQuote).toBe(true);
+      expect(config.trailingComma).toBe("all");
+      expect(config.printWidth).toBe(80);
+      expect(config.tabWidth).toBe(2);
+      expect(config.arrowParens).toBe("avoid");
+      expect(config.plugins).toContain("prettier-plugin-tailwindcss");
+    });
+
+    test(".vscode/extensions.json recommends required extensions", async () => {
+      const content = await readText(path.join(templatePath, ".vscode", "extensions.json"));
+      const config = JSON.parse(content);
+      expect(config.recommendations).toContain("dbaeumer.vscode-eslint");
+      expect(config.recommendations).toContain("esbenp.prettier-vscode");
+      expect(config.recommendations).toContain("bradlc.vscode-tailwindcss");
+    });
+
+    test("package.json lint script uses eslint not next lint", async () => {
+      const pkg = (await readJSON(path.join(templatePath, "package.json"))) as Record<string, unknown>;
+      const scripts = pkg.scripts as Record<string, string>;
+      expect(scripts.lint).toBe("eslint .");
+    });
+
+    test("package.json has all required lint devDependencies", async () => {
+      const pkg = (await readJSON(path.join(templatePath, "package.json"))) as Record<string, unknown>;
+      const devDeps = pkg.devDependencies as Record<string, string>;
+      const requiredDeps = [
+        "eslint",
+        "eslint-config-next",
+        "eslint-config-prettier",
+        "eslint-plugin-perfectionist",
+        "prettier",
+        "prettier-plugin-tailwindcss",
+      ];
+      for (const dep of requiredDeps) {
+        expect(devDeps[dep]).toBeDefined();
       }
     });
 
@@ -752,6 +901,119 @@ describe("Frontend Templates", () => {
       }
     });
   });
+
+  describe("svelte", () => {
+    const templatePath = path.join(TEMPLATES_DIR, "frontends", "svelte");
+
+    test("template directory exists", async () => {
+      const exists = await fileExists(templatePath);
+      expect(exists).toBe(true);
+    });
+
+    test("required files exist", async () => {
+      const requiredFiles = [
+        "package.json",
+        "tsconfig.json",
+        "vite.config.ts",
+        "svelte.config.js",
+        "src/app.html",
+        ".env.example",
+        ".gitignore",
+        "README.md",
+        "CLAUDE.md",
+      ];
+
+      for (const file of requiredFiles) {
+        const filePath = path.join(templatePath, file);
+        const exists = await fileExistsOrHbs(filePath);
+        expect(exists).toBe(true);
+      }
+    });
+
+    test("SvelteKit route structure exists", async () => {
+      const hasLayout = await fileExists(path.join(templatePath, "src", "routes", "+layout.svelte"));
+      const hasPage = await fileExists(path.join(templatePath, "src", "routes", "+page.svelte"));
+
+      expect(hasLayout).toBe(true);
+      expect(hasPage).toBe(true);
+    });
+
+    test("lib structure exists with components and utils", async () => {
+      const hasUtils = await fileExists(path.join(templatePath, "src", "lib", "utils.ts"));
+      const hasButton = await fileExists(path.join(templatePath, "src", "lib", "components", "ui", "button.svelte"));
+      const hasCard = await fileExists(path.join(templatePath, "src", "lib", "components", "ui", "card.svelte"));
+
+      expect(hasUtils).toBe(true);
+      expect(hasButton).toBe(true);
+      expect(hasCard).toBe(true);
+    });
+
+    test("cn utility uses clsx + tailwind-merge", async () => {
+      const content = await readText(path.join(templatePath, "src", "lib", "utils.ts"));
+      expect(content).toContain("clsx");
+      expect(content).toContain("twMerge");
+    });
+
+    test("package.json includes SvelteKit and tailwind dependencies", async () => {
+      const pkg = (await readJSON(path.join(templatePath, "package.json"))) as Record<string, unknown>;
+      const deps = pkg.dependencies as Record<string, string>;
+      const devDeps = pkg.devDependencies as Record<string, string>;
+      expect(deps["clsx"]).toBeDefined();
+      expect(deps["tailwind-merge"]).toBeDefined();
+      expect(devDeps["@sveltejs/kit"]).toBeDefined();
+      expect(devDeps["svelte"]).toBeDefined();
+      expect(devDeps["@tailwindcss/vite"]).toBeDefined();
+    });
+
+    test("app.css imports tailwind", async () => {
+      const content = await readText(path.join(templatePath, "src", "app.css.hbs"));
+      expect(content).toContain("tailwindcss");
+    });
+
+    test("package.json is valid JSON", async () => {
+      const filePath = path.join(templatePath, "package.json");
+      const pkg = (await readJSON(filePath)) as Record<string, unknown>;
+      expect(typeof pkg.name).toBe("string");
+      expect(typeof pkg.version).toBe("string");
+    });
+
+    test("+page.svelte contains health check logic", async () => {
+      const filePath = path.join(templatePath, "src", "routes", "+page.svelte");
+      const content = await readText(filePath);
+      expect(content.toLowerCase()).toContain("health");
+      expect(content).toContain("TITLE_TEXT");
+    });
+
+    test("+page.svelte uses Svelte 5 runes", async () => {
+      const filePath = path.join(templatePath, "src", "routes", "+page.svelte");
+      const content = await readText(filePath);
+      expect(content).toContain("$state");
+      expect(content).toContain("$derived");
+      expect(content).toContain("$effect");
+    });
+
+    test("+layout.svelte uses $props and @render", async () => {
+      const filePath = path.join(templatePath, "src", "routes", "+layout.svelte");
+      const content = await readText(filePath);
+      expect(content).toContain("$props");
+      expect(content).toContain("@render children");
+    });
+
+    test(".env.example contains VITE_BACKEND_URL", async () => {
+      const filePath = path.join(templatePath, ".env.example");
+      const content = await readText(filePath);
+      expect(content).toContain("VITE_BACKEND_URL");
+    });
+
+    test("no leftover {{ in any file", async () => {
+      const files = await fs.readdir(templatePath, { recursive: true });
+      for (const file of files) {
+        const filePath = path.join(templatePath, file as string);
+        const hasUnresolved = await hasUnresolvedVars(filePath);
+        expect(hasUnresolved).toBe(false);
+      }
+    });
+  });
 });
 
 describe("Cross-Template Validation", () => {
@@ -761,8 +1023,9 @@ describe("Cross-Template Validation", () => {
       "go-chi",
       "nestjs",
       "rust-axum",
+      "dotnet-aspnetcore",
     ];
-    const frontends: FrontendFramework[] = ["react-vite", "nextjs", "angular"];
+    const frontends: FrontendFramework[] = ["react-vite", "nextjs", "angular", "svelte"];
 
     for (const backend of backends) {
       const path_ = path.join(TEMPLATES_DIR, "backends", backend);
@@ -783,8 +1046,9 @@ describe("Cross-Template Validation", () => {
       "go-chi",
       "nestjs",
       "rust-axum",
+      "dotnet-aspnetcore",
     ];
-    const frontends: FrontendFramework[] = ["react-vite", "nextjs", "angular"];
+    const frontends: FrontendFramework[] = ["react-vite", "nextjs", "angular", "svelte"];
 
     for (const backend of backends) {
       const filePath = path.join(
@@ -815,8 +1079,9 @@ describe("Cross-Template Validation", () => {
       "go-chi",
       "nestjs",
       "rust-axum",
+      "dotnet-aspnetcore",
     ];
-    const frontends: FrontendFramework[] = ["react-vite", "nextjs", "angular"];
+    const frontends: FrontendFramework[] = ["react-vite", "nextjs", "angular", "svelte"];
 
     for (const backend of backends) {
       const filePath = path.join(
@@ -848,8 +1113,9 @@ describe("Cross-Template Validation", () => {
       "go-chi",
       "nestjs",
       "rust-axum",
+      "dotnet-aspnetcore",
     ];
-    const frontends: FrontendFramework[] = ["react-vite", "nextjs", "angular"];
+    const frontends: FrontendFramework[] = ["react-vite", "nextjs", "angular", "svelte"];
 
     for (const backend of backends) {
       const filePath = path.join(

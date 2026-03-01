@@ -46,6 +46,7 @@ export const BACKEND_FRAMEWORK = {
   GO_CHI: "go-chi",
   NESTJS: "nestjs",
   RUST_AXUM: "rust-axum",
+  DOTNET_ASPNETCORE: "dotnet-aspnetcore",
 } as const;
 
 // Frontend framework identifiers
@@ -53,6 +54,7 @@ export const FRONTEND_FRAMEWORK = {
   REACT_VITE: "react-vite",
   NEXTJS: "nextjs",
   ANGULAR: "angular",
+  SVELTE: "svelte",
 } as const;
 
 /**
@@ -92,6 +94,14 @@ export const BACKEND_FRAMEWORKS: Record<BackendFramework, FrameworkMeta> = {
     installCommand: "cargo build",
     devCommand: "cargo run",
   },
+  [BACKEND_FRAMEWORK.DOTNET_ASPNETCORE]: {
+    id: BACKEND_FRAMEWORK.DOTNET_ASPNETCORE,
+    label: "C# (ASP.NET Core)",
+    type: PROJECT_TYPE.BACKEND as ProjectType,
+    defaultPort: 8000,
+    installCommand: "dotnet restore",
+    devCommand: "dotnet run",
+  },
 };
 
 /**
@@ -122,6 +132,14 @@ export const FRONTEND_FRAMEWORKS: Record<FrontendFramework, FrameworkMeta> = {
     defaultPort: 4200,
     installCommand: "pnpm install",
     devCommand: "pnpm start",
+  },
+  [FRONTEND_FRAMEWORK.SVELTE]: {
+    id: FRONTEND_FRAMEWORK.SVELTE,
+    label: "SvelteKit",
+    type: PROJECT_TYPE.FRONTEND as ProjectType,
+    defaultPort: 5173,
+    installCommand: "pnpm install",
+    devCommand: "pnpm dev",
   },
 };
 
@@ -312,6 +330,7 @@ export const SKILL_CATALOG: Record<string, SkillEntry[]> = {
       hint: "Strict patterns, utility types, naming conventions",
     },
   ],
+  "dotnet-aspnetcore": [],
   "python-fastapi": [
     {
       id: "fastapi",
@@ -358,6 +377,18 @@ export const SKILL_CATALOG: Record<string, SkillEntry[]> = {
       id: "angular",
       label: "Angular",
       hint: "Angular 19+ core, forms, architecture, performance",
+    },
+  ],
+  svelte: [
+    {
+      id: "svelte",
+      label: "SvelteKit",
+      hint: "SvelteKit runes, routing, SSR, form actions",
+    },
+    {
+      id: "tailwind-4",
+      label: "Tailwind CSS 4",
+      hint: "Tailwind v4 patterns and best practices",
     },
   ],
 } as const;

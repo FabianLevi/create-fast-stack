@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.0",
@@ -14,7 +14,7 @@
     "@trpc/server": "^11.0.0",
     "@trpc/tanstack-react-query": "^11.0.0",
     "clsx": "^2.1.1",
-    "next": "^15.1.0",
+    "next": "^16.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "server-only": "^0.0.1",
@@ -27,6 +27,12 @@
     "@types/node": "^20.15.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "eslint": "^9.32.0",
+    "eslint-config-next": "^16.0.0",
+    "eslint-config-prettier": "^10.1.0",
+    "eslint-plugin-perfectionist": "^4.15.0",
+    "prettier": "^3.6.0",
+    "prettier-plugin-tailwindcss": "^0.6.14",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.6.0"
   }

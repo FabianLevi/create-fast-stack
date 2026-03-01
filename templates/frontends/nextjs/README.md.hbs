@@ -26,17 +26,19 @@ NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
 {{#if (eq packageManager "npm")}}- `npm run dev` — Start development server
 - `npm run build` — Build for production
 - `npm start` — Start production server
-- `npm run lint` — Run {{#if (includes selectedAddons "biome")}}Biome{{else}}linter{{/if}}{{else if (eq packageManager "bun")}}- `bun run dev` — Start development server
+- `npm run lint` — Run {{#if (includes selectedAddons "biome")}}Biome{{else}}ESLint{{/if}}{{else if (eq packageManager "bun")}}- `bun run dev` — Start development server
 - `bun run build` — Build for production
 - `bun start` — Start production server
-- `bun run lint` — Run {{#if (includes selectedAddons "biome")}}Biome{{else}}linter{{/if}}{{else}}- `pnpm dev` — Start development server
+- `bun run lint` — Run {{#if (includes selectedAddons "biome")}}Biome{{else}}ESLint{{/if}}{{else}}- `pnpm dev` — Start development server
 - `pnpm build` — Build for production
 - `pnpm start` — Start production server
-- `pnpm lint` — Run {{#if (includes selectedAddons "biome")}}Biome{{else}}linter{{/if}}{{/if}}
+- `pnpm lint` — Run {{#if (includes selectedAddons "biome")}}Biome{{else}}ESLint{{/if}}{{/if}}
 
 ## Stack
 
-- Next.js 15
+- Next.js 16 (App Router)
 - React 19
 - TypeScript
-- App Router
+- tRPC v11 + React Query v5
+- Tailwind CSS v4
+- ESLint 9 + Prettier

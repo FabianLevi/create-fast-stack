@@ -19,7 +19,7 @@ cleanup() {
   echo "Cleaning up temp dir: $TMPDIR_BASE"
   rm -rf "$TMPDIR_BASE"
   # Remove any leftover containers/images
-  for name in cfs-e2e-python-fastapi cfs-e2e-go-fiber cfs-e2e-nestjs; do
+  for name in cfs-e2e-python-fastapi cfs-e2e-go-chi cfs-e2e-nestjs cfs-e2e-dotnet-aspnetcore; do
     docker rm -f "$name" 2>/dev/null || true
     docker rmi -f "$name" 2>/dev/null || true
   done
@@ -187,17 +187,17 @@ WORKDIR /app
 COPY . .
 RUN uv sync
 EXPOSE 8000
-CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "uvicorn", "api.app:app", "--host", "0.0.0.0", "--port", "8000"]
 DOCKERFILE
 )
 
 DOCKERFILE_GO=$(cat <<'DOCKERFILE'
-FROM golang:1.21-alpine
+FROM golang:1.22-alpine
 WORKDIR /app
 COPY . .
 RUN go mod tidy && go mod download
 EXPOSE 8000
-CMD ["go", "run", "main.go"]
+CMD ["go", "run", "cmd/api/main.go"]
 DOCKERFILE
 )
 
@@ -209,6 +209,23 @@ RUN npm install
 ENV APP_HOST=0.0.0.0
 EXPOSE 8000
 CMD ["npm", "run", "start:dev"]
+DOCKERFILE
+)
+
+DOCKERFILE_DOTNET=$(cat <<'DOCKERFILE'
+FROM mcr.microsoft.com/dotnet/sdk:10.0-preview AS build
+WORKDIR /app
+COPY . .
+RUN dotnet restore
+RUN dotnet publish -c Release -o /out
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview
+WORKDIR /app
+COPY --from=build /out .
+ENV HTTP_PORTS=
+ENV APP_HOST=0.0.0.0
+EXPOSE 8000
+CMD ["dotnet", "App.dll"]
 DOCKERFILE
 )
 
@@ -230,10 +247,11 @@ main() {
 
   check_prereqs
 
-  # 3 backend tests (sequential — share port 8000)
+  # 4 backend tests (sequential — share port 8000)
   test_backend "python-fastapi" "$DOCKERFILE_PYTHON"
-  test_backend "go-fiber" "$DOCKERFILE_GO"
+  test_backend "go-chi" "$DOCKERFILE_GO"
   test_backend "nestjs" "$DOCKERFILE_NEST"
+  test_backend "dotnet-aspnetcore" "$DOCKERFILE_DOTNET"
 
   # 2 frontend tests (sequential — docker build)
   test_frontend "react-vite" "$DOCKERFILE_FRONTEND"

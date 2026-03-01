@@ -33,8 +33,8 @@ bun run dev
 
 ## Features
 
-- **Backends**: Python (FastAPI), Go (Chi), NestJS, Rust (Axum)
-- **Frontends**: React (Vite), Next.js, Angular 19
+- **Backends**: Python (FastAPI), Go (Chi), NestJS, Rust (Axum), C# (ASP.NET Core)
+- **Frontends**: React (Vite), Next.js, Angular 19, SvelteKit
 - **Runtime**: Bun or Node.js
 - **Package Manager**: npm, pnpm, or bun
 - **Addons**: Biome, Husky + lint-staged, Claude Skills, MCP servers
@@ -50,6 +50,7 @@ Every backend exposes `GET /health` with CORS pre-configured. Every frontend fet
 | FastAPI | Python 3.12+ | React + Vite | React 19, Tailwind v4, Vitest |
 | Chi | Go 1.22+ | Next.js | Next 15, tRPC v11, Tailwind v4 |
 | NestJS | TypeScript | Angular | Angular 19, Tailwind v4, Vitest |
+| ASP.NET Core | C# 13 / .NET 10 | SvelteKit | Svelte 5, Tailwind v4, Vitest |
 | Axum | Rust 2021 | | |
 
 Mix and match — any backend with any frontend.

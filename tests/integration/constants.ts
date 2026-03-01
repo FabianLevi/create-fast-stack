@@ -36,12 +36,14 @@ export const ALL_BACKENDS: BackendFramework[] = [
   "go-chi",
   "nestjs",
   "rust-axum",
+  "dotnet-aspnetcore",
 ];
 
 export const ALL_FRONTENDS: FrontendFramework[] = [
   "react-vite",
   "nextjs",
   "angular",
+  "svelte",
 ];
 
 // Default ports per framework (used inside containers)
@@ -49,6 +51,7 @@ export const FRONTEND_PORTS: Record<FrontendFramework, number> = {
   "react-vite": 5173,
   nextjs: 3000,
   angular: 4200,
+  svelte: 5173,
 };
 
 export const BACKEND_PORT = 8000;

@@ -7,10 +7,10 @@
 export type ProjectType = "backend" | "frontend";
 
 // Backend framework identifiers
-export type BackendFramework = "python-fastapi" | "go-chi" | "nestjs" | "rust-axum";
+export type BackendFramework = "python-fastapi" | "go-chi" | "nestjs" | "rust-axum" | "dotnet-aspnetcore";
 
 // Frontend framework identifiers
-export type FrontendFramework = "react-vite" | "nextjs" | "angular";
+export type FrontendFramework = "react-vite" | "nextjs" | "angular" | "svelte";
 
 // Runtime environment identifiers
 export type Runtime = "bun" | "node";

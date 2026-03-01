@@ -1,0 +1,50 @@
+# {{projectName}}
+
+SvelteKit frontend template.
+
+## Getting started
+
+Install dependencies:
+```bash
+{{#if (eq packageManager "npm")}}npm install{{else if (eq packageManager "bun")}}bun install{{else}}pnpm install{{/if}}
+```
+
+{{#if (includes selectedAddons "husky")}}Set up git hooks:
+```bash
+{{#if (eq packageManager "npm")}}npm exec husky{{else if (eq packageManager "bun")}}bun exec husky{{else}}pnpm exec husky{{/if}}
+```
+
+{{/if}}Start the development server:
+```bash
+{{#if (eq packageManager "npm")}}npm run dev{{else if (eq packageManager "bun")}}bun run dev{{else}}pnpm dev{{/if}}
+```
+
+Open http://localhost:5173 in your browser.
+
+## Environment
+
+Copy `.env.example` to `.env.local` and update values. Environment variables use the `VITE_*` prefix — see `src/lib/environment.ts`.
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+{{#if (eq packageManager "npm")}}| `npm run dev` | Start dev server |
+| `npm run build` | Production build |
+| `npm run preview` | Preview production build |
+| `npm run check` | Run svelte-check |
+| `npm run lint` | Run {{#if (includes selectedAddons "biome")}}Biome{{else}}ESLint{{/if}} |
+| `npm test` | Run tests once |
+| `npm run test:watch` | Run tests (watch mode) |{{else if (eq packageManager "bun")}}| `bun run dev` | Start dev server |
+| `bun run build` | Production build |
+| `bun run preview` | Preview production build |
+| `bun run check` | Run svelte-check |
+| `bun run lint` | Run {{#if (includes selectedAddons "biome")}}Biome{{else}}ESLint{{/if}} |
+| `bun run test` | Run tests once |
+| `bun run test:watch` | Run tests (watch mode) |{{else}}| `pnpm dev` | Start dev server |
+| `pnpm build` | Production build |
+| `pnpm preview` | Preview production build |
+| `pnpm check` | Run svelte-check |
+| `pnpm lint` | Run {{#if (includes selectedAddons "biome")}}Biome{{else}}ESLint{{/if}} |
+| `pnpm test` | Run tests once |
+| `pnpm test:watch` | Run tests (watch mode) |{{/if}}

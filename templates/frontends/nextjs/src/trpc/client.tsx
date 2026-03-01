@@ -4,9 +4,11 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { createTRPCClient, httpBatchLink } from '@trpc/client';
 import { useState } from 'react';
 import superjson from 'superjson';
-import { TRPCProvider } from './utils';
-import { makeQueryClient } from './query-client';
+
 import type { AppRouter } from '@/server/routers';
+
+import { makeQueryClient } from './query-client';
+import { TRPCProvider } from './utils';
 
 function getBaseUrl() {
   if (typeof window !== 'undefined') return '';

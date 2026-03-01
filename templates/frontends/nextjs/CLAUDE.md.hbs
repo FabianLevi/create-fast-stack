@@ -2,12 +2,7 @@
 
 ## Stack
 
-- Next.js 15 (App Router)
-- React 19
-- TypeScript
-- tRPC v11 + React Query v5
-- Tailwind CSS v4
-- Geist font
+Next.js 16 (App Router), React 19, TypeScript, tRPC v11 + React Query v5, Tailwind CSS v4, Geist font{{#if (includes selectedAddons "biome")}}, Biome{{else}}, ESLint 9, Prettier{{/if}}
 
 {{#if isCustom}}## Configuration
 
@@ -30,13 +25,13 @@ Server runs at `http://localhost:3000`.
 {{#if (eq packageManager "npm")}}- `npm run dev` — Development server with hot reload
 - `npm run build` — Build for production
 - `npm start` — Start production server
-- `npm run lint` — Run {{#if (includes selectedAddons "biome")}}Biome (lint + format){{else}}Next.js linter{{/if}}{{else if (eq packageManager "bun")}}- `bun dev` — Development server with hot reload
+- `npm run lint` — Run {{#if (includes selectedAddons "biome")}}Biome (lint + format){{else}}ESLint{{/if}}{{else if (eq packageManager "bun")}}- `bun dev` — Development server with hot reload
 - `bun run build` — Build for production
 - `bun start` — Start production server
-- `bun run lint` — Run {{#if (includes selectedAddons "biome")}}Biome (lint + format){{else}}Next.js linter{{/if}}{{else}}- `pnpm dev` — Development server with hot reload
+- `bun run lint` — Run {{#if (includes selectedAddons "biome")}}Biome (lint + format){{else}}ESLint{{/if}}{{else}}- `pnpm dev` — Development server with hot reload
 - `pnpm build` — Build for production
 - `pnpm start` — Start production server
-- `pnpm lint` — Run {{#if (includes selectedAddons "biome")}}Biome (lint + format){{else}}Next.js linter{{/if}}{{/if}}
+- `pnpm lint` — Run {{#if (includes selectedAddons "biome")}}Biome (lint + format){{else}}ESLint{{/if}}{{/if}}
 
 ## Project Structure
 
@@ -106,9 +101,19 @@ const { data } = useQuery(trpc.myFeature.get.queryOptions());
 - PascalCase for components
 - kebab-case for file names
 - Imports: use `@/` path alias (e.g. `import { cn } from "@/lib/utils"`)
+- Import order: builtin > external > internal > parent > sibling > index{{#if (includes selectedAddons "biome")}} (enforced by Biome){{else}} (enforced by eslint-plugin-perfectionist){{/if}}
 - Styling: Tailwind classes + `cn()` for conditional merging
+- Type imports: `import type { ... }`
 - `use client` for client components
 - TypeScript strict mode enforced
+
+## Key rules
+
+- No `any` types — use `unknown`
+- Early returns, no deep nesting
+- Const types pattern for objects (`as const`)
+- Strict mode enabled
+{{#if (includes selectedAddons "biome")}}- Pre-commit hook runs biome check on staged files{{else}}- Pre-commit hook runs eslint + prettier on staged files{{/if}}
 
 ## Backend Connectivity
 

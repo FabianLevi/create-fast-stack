@@ -300,7 +300,7 @@ describe("Template Resolution", () => {
   });
 
   test("all backend templates exist", async () => {
-    const backends = ["python-fastapi", "go-chi", "nestjs", "rust-axum"];
+    const backends = ["python-fastapi", "go-chi", "nestjs", "rust-axum", "dotnet-aspnetcore"];
 
     for (const backend of backends) {
       const templatePath = resolveTemplatePath("backend", backend);
@@ -313,7 +313,7 @@ describe("Template Resolution", () => {
   });
 
   test("all frontend templates exist", async () => {
-    const frontends = ["react-vite", "nextjs"];
+    const frontends = ["react-vite", "nextjs", "svelte"];
 
     for (const frontend of frontends) {
       const templatePath = resolveTemplatePath("frontend", frontend);
@@ -634,6 +634,7 @@ describe("Skills Catalog", () => {
       BACKEND_FRAMEWORK.GO_CHI,
       BACKEND_FRAMEWORK.NESTJS,
       BACKEND_FRAMEWORK.RUST_AXUM,
+      BACKEND_FRAMEWORK.DOTNET_ASPNETCORE,
     ];
 
     backendFrameworks.forEach((framework) => {
@@ -647,6 +648,7 @@ describe("Skills Catalog", () => {
       FRONTEND_FRAMEWORK.REACT_VITE,
       FRONTEND_FRAMEWORK.NEXTJS,
       FRONTEND_FRAMEWORK.ANGULAR,
+      FRONTEND_FRAMEWORK.SVELTE,
     ];
 
     frontendFrameworks.forEach((framework) => {

@@ -17,6 +17,7 @@ import type { PortConfig, TestCombo } from "./types.js";
 /** Frontend env var name per framework */
 const FRONTEND_ENV_MAP: Record<string, string> = {
   "react-vite": "VITE_BACKEND_URL",
+  svelte: "VITE_BACKEND_URL",
   nextjs: "BACKEND_URL",
   angular: "BACKEND_URL",
 };
