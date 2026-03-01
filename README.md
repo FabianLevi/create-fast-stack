@@ -6,7 +6,7 @@ A polyglot CLI scaffolder for spinning up production-ready full-stack projects i
 
 <br />
 
-https://github.com/user-attachments/assets/fb0645c3-a05b-4f46-ac06-c3b4c1c2bab8
+https://github.com/user-attachments/assets/9bd25b19-c0fc-485b-8552-c8799f8bb21a
 
 ## Philosophy
 
