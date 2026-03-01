@@ -6,6 +6,12 @@ import { select, cancel, isCancel } from "@clack/prompts";
 import { FRONTEND_FRAMEWORKS } from "../constants.js";
 import type { FrontendFramework } from "../types.js";
 
+const VALID_FRONTENDS = new Set<string>(Object.keys(FRONTEND_FRAMEWORKS));
+
+function isFrontendFramework(value: string): value is FrontendFramework {
+  return VALID_FRONTENDS.has(value);
+}
+
 /**
  * Prompt for frontend framework selection
  * Returns selected framework or exits if cancelled
@@ -28,5 +34,11 @@ export async function promptFrontendFramework(): Promise<FrontendFramework> {
     process.exit(0);
   }
 
-  return userFrontendFramework as FrontendFramework;
+  const value = String(userFrontendFramework);
+  if (!isFrontendFramework(value)) {
+    cancel(`Invalid frontend framework: ${value}`);
+    process.exit(1);
+  }
+
+  return value;
 }

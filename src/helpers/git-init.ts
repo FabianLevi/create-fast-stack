@@ -11,62 +11,49 @@ import { GitError, commandExists, formatStderr } from "../utils/index.js";
 /**
  * Initialize git repo for a single project
  */
-export async function initGitRepo(projectPath: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    // git init
-    const init = spawnSync("git", ["init"], {
-      cwd: projectPath,
-      stdio: "pipe",
-    });
-
-    if (init.status !== 0) {
-      reject(
-        new GitError(`git init failed in ${projectPath}: ${formatStderr(init.stderr)}`)
-      );
-      return;
-    }
-
-    // git add .
-    const add = spawnSync("git", ["add", "."], {
-      cwd: projectPath,
-      stdio: "pipe",
-    });
-
-    if (add.status !== 0) {
-      reject(
-        new GitError(`git add failed in ${projectPath}: ${formatStderr(add.stderr)}`)
-      );
-      return;
-    }
-
-    // git commit -m "Initial commit"
-    const commit = spawnSync("git", ["commit", "-m", "Initial commit"], {
-      cwd: projectPath,
-      stdio: "pipe",
-    });
-
-    if (commit.status !== 0) {
-      reject(
-        new GitError(
-          `git commit failed in ${projectPath}: ${formatStderr(commit.stderr)}`
-        )
-      );
-      return;
-    }
-
-    resolve();
+export function initGitRepo(projectPath: string): void {
+  // git init
+  const init = spawnSync("git", ["init"], {
+    cwd: projectPath,
+    stdio: "pipe",
   });
+
+  if (init.status !== 0) {
+    throw new GitError(`git init failed in ${projectPath}: ${formatStderr(init.stderr)}`);
+  }
+
+  // git add .
+  const add = spawnSync("git", ["add", "."], {
+    cwd: projectPath,
+    stdio: "pipe",
+  });
+
+  if (add.status !== 0) {
+    throw new GitError(`git add failed in ${projectPath}: ${formatStderr(add.stderr)}`);
+  }
+
+  // git commit -m "Initial commit"
+  const commit = spawnSync("git", ["commit", "-m", "Initial commit"], {
+    cwd: projectPath,
+    stdio: "pipe",
+  });
+
+  if (commit.status !== 0) {
+    throw new GitError(
+      `git commit failed in ${projectPath}: ${formatStderr(commit.stderr)}`
+    );
+  }
 }
 
 /**
  * Initialize git for all projects in the scaffold
  * Continues if one project fails (not atomic)
  */
-export async function initGitForProjects(
+export function initGitForProjects(
   parentPath: string,
   projects: ProjectSelection[],
   shouldInit: boolean
-): Promise<void> {
+): void {
   if (!shouldInit) {
     return;
   }
@@ -80,7 +67,7 @@ export async function initGitForProjects(
     const projectPath = `${parentPath}/${project.folderName}`;
 
     try {
-      await initGitRepo(projectPath);
+      initGitRepo(projectPath);
     } catch (error) {
       if (error instanceof Error) {
         log.warn(`Failed to initialize git for ${project.folderName}: ${error.message}`);

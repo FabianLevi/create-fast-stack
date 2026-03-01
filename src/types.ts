@@ -27,11 +27,14 @@ export type AddonName = "biome" | "husky" | "skills" | "mcp";
 // Addon categories
 export type AddonGroup = "tooling" | "ai";
 
+// Skill catalog keys: common categories + all framework IDs
+export type SkillCatalogKey = "common-backend" | "common-frontend" | BackendFramework | FrontendFramework;
+
 /**
  * Framework metadata for prompts and post-scaffold output
  */
 export interface FrameworkMeta {
-  id: string;
+  id: BackendFramework | FrontendFramework;
   label: string;
   type: ProjectType;
   defaultPort: number;

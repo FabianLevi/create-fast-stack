@@ -4,7 +4,7 @@
 
 export { ValidationError, GitError, ScaffoldError } from "./errors.js";
 export { detectPackageManager } from "./package-manager.js";
-export type { PackageManager } from "./package-manager.js";
+export type { PackageManager } from "../types.js";
 export { commandExists } from "./command-exists.js";
 export { validateProjectName } from "./validate.js";
 

@@ -20,11 +20,17 @@ import { detectPackageManager } from "../utils/index.js";
 /**
  * Resolve framework metadata from a project selection
  */
-function getFrameworkMeta(project: ProjectSelection): FrameworkMeta | undefined {
-  if (project.type === PROJECT_TYPE.BACKEND) {
-    return BACKEND_FRAMEWORKS[project.framework as keyof typeof BACKEND_FRAMEWORKS];
+function getFrameworkMeta(project: ProjectSelection): FrameworkMeta {
+  const frameworks = project.type === PROJECT_TYPE.BACKEND
+    ? BACKEND_FRAMEWORKS
+    : FRONTEND_FRAMEWORKS;
+
+  const key = project.framework;
+  if (!(key in frameworks)) {
+    throw new Error(`Unknown ${project.type} framework: "${key}"`);
   }
-  return FRONTEND_FRAMEWORKS[project.framework as keyof typeof FRONTEND_FRAMEWORKS];
+
+  return frameworks[key as keyof typeof frameworks];
 }
 
 /**
@@ -37,8 +43,6 @@ function printNextSteps(config: ScaffoldConfig, _parentPath: string): void {
 
   for (const project of config.projects) {
     const meta = getFrameworkMeta(project);
-    if (!meta) continue;
-
     const projectPath = path.join(config.projectName, project.folderName);
     const typeLabel = project.type.charAt(0).toUpperCase() + project.type.slice(1);
 
@@ -92,11 +96,9 @@ function printNextSteps(config: ScaffoldConfig, _parentPath: string): void {
 
   if (hasBackend && frontendProject) {
     const frontendMeta = getFrameworkMeta(frontendProject);
-    if (frontendMeta) {
-      steps.push(
-        `Open http://localhost:${frontendMeta.defaultPort} to see frontend connected to backend.`
-      );
-    }
+    steps.push(
+      `Open http://localhost:${frontendMeta.defaultPort} to see frontend connected to backend.`
+    );
   }
 
   if (steps.length > 0) {
@@ -162,13 +164,11 @@ export async function runCreate(projectName?: string): Promise<void> {
     mkdirSync(parentPath, { recursive: true });
 
     // Setup SIGINT cleanup handler
-    const cleanup = () => {
+    const onSigint = () => {
       rmSync(parentPath, { recursive: true, force: true });
-    };
-    process.on("SIGINT", () => {
-      cleanup();
       process.exit(1);
-    });
+    };
+    process.on("SIGINT", onSigint);
 
     try {
       await generateProjects(config, parentPath);
@@ -199,10 +199,13 @@ export async function runCreate(projectName?: string): Promise<void> {
         await initGitForProjects(parentPath, config.projects, config.initGit);
       }
 
+      process.off("SIGINT", onSigint);
+
       // Print post-scaffold summary with framework-specific next steps
       printNextSteps(config, parentPath);
     } catch (error) {
-      cleanup();
+      process.off("SIGINT", onSigint);
+      rmSync(parentPath, { recursive: true, force: true });
       throw error;
     }
   } catch (error) {

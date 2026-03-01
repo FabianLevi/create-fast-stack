@@ -15,8 +15,8 @@ import type {
   ScaffoldMode,
   AddonName,
   AddonMetadata,
-  AddonGroup,
   SkillEntry,
+  SkillCatalogKey,
   McpServerEntry,
 } from "./types.js";
 
@@ -28,10 +28,15 @@ export const TEMPLATES_DIR = path.join(PKG_ROOT, "templates");
 // Default configuration for --yes flag and programmatic API
 export const DEFAULT_CONFIG = {
   projectName: "my-fast-app",
-  backend: "python-fastapi" as BackendFramework,
-  frontend: "react-vite" as FrontendFramework,
+  backend: "python-fastapi",
+  frontend: "react-vite",
   initGit: true,
-} as const;
+} as const satisfies {
+  projectName: string;
+  backend: BackendFramework;
+  frontend: FrontendFramework;
+  initGit: boolean;
+};
 
 // Project types available for scaffolding
 export const PROJECT_TYPE = {
@@ -65,7 +70,7 @@ export const BACKEND_FRAMEWORKS: Record<BackendFramework, FrameworkMeta> = {
   [BACKEND_FRAMEWORK.PYTHON_FASTAPI]: {
     id: BACKEND_FRAMEWORK.PYTHON_FASTAPI,
     label: "Python (FastAPI)",
-    type: PROJECT_TYPE.BACKEND as ProjectType,
+    type: PROJECT_TYPE.BACKEND,
     defaultPort: 8000,
     installCommand: "uv sync",
     devCommand: "uv run python -m api.main",
@@ -73,7 +78,7 @@ export const BACKEND_FRAMEWORKS: Record<BackendFramework, FrameworkMeta> = {
   [BACKEND_FRAMEWORK.GO_CHI]: {
     id: BACKEND_FRAMEWORK.GO_CHI,
     label: "Go (Chi)",
-    type: PROJECT_TYPE.BACKEND as ProjectType,
+    type: PROJECT_TYPE.BACKEND,
     defaultPort: 8000,
     installCommand: "go mod download",
     devCommand: "go run cmd/api/main.go",
@@ -81,7 +86,7 @@ export const BACKEND_FRAMEWORKS: Record<BackendFramework, FrameworkMeta> = {
   [BACKEND_FRAMEWORK.NESTJS]: {
     id: BACKEND_FRAMEWORK.NESTJS,
     label: "NestJS",
-    type: PROJECT_TYPE.BACKEND as ProjectType,
+    type: PROJECT_TYPE.BACKEND,
     defaultPort: 8000,
     installCommand: "npm install",
     devCommand: "npm run start:dev",
@@ -89,7 +94,7 @@ export const BACKEND_FRAMEWORKS: Record<BackendFramework, FrameworkMeta> = {
   [BACKEND_FRAMEWORK.RUST_AXUM]: {
     id: BACKEND_FRAMEWORK.RUST_AXUM,
     label: "Rust (Axum)",
-    type: PROJECT_TYPE.BACKEND as ProjectType,
+    type: PROJECT_TYPE.BACKEND,
     defaultPort: 8000,
     installCommand: "cargo build",
     devCommand: "cargo run",
@@ -97,7 +102,7 @@ export const BACKEND_FRAMEWORKS: Record<BackendFramework, FrameworkMeta> = {
   [BACKEND_FRAMEWORK.DOTNET_ASPNETCORE]: {
     id: BACKEND_FRAMEWORK.DOTNET_ASPNETCORE,
     label: "C# (ASP.NET Core)",
-    type: PROJECT_TYPE.BACKEND as ProjectType,
+    type: PROJECT_TYPE.BACKEND,
     defaultPort: 8000,
     installCommand: "dotnet restore",
     devCommand: "dotnet run",
@@ -112,7 +117,7 @@ export const FRONTEND_FRAMEWORKS: Record<FrontendFramework, FrameworkMeta> = {
   [FRONTEND_FRAMEWORK.REACT_VITE]: {
     id: FRONTEND_FRAMEWORK.REACT_VITE,
     label: "React (Vite)",
-    type: PROJECT_TYPE.FRONTEND as ProjectType,
+    type: PROJECT_TYPE.FRONTEND,
     defaultPort: 5173,
     installCommand: "pnpm install",
     devCommand: "pnpm dev",
@@ -120,7 +125,7 @@ export const FRONTEND_FRAMEWORKS: Record<FrontendFramework, FrameworkMeta> = {
   [FRONTEND_FRAMEWORK.NEXTJS]: {
     id: FRONTEND_FRAMEWORK.NEXTJS,
     label: "Next.js",
-    type: PROJECT_TYPE.FRONTEND as ProjectType,
+    type: PROJECT_TYPE.FRONTEND,
     defaultPort: 3000,
     installCommand: "pnpm install",
     devCommand: "pnpm dev",
@@ -128,7 +133,7 @@ export const FRONTEND_FRAMEWORKS: Record<FrontendFramework, FrameworkMeta> = {
   [FRONTEND_FRAMEWORK.ANGULAR]: {
     id: FRONTEND_FRAMEWORK.ANGULAR,
     label: "Angular 19",
-    type: PROJECT_TYPE.FRONTEND as ProjectType,
+    type: PROJECT_TYPE.FRONTEND,
     defaultPort: 4200,
     installCommand: "pnpm install",
     devCommand: "pnpm start",
@@ -136,7 +141,7 @@ export const FRONTEND_FRAMEWORKS: Record<FrontendFramework, FrameworkMeta> = {
   [FRONTEND_FRAMEWORK.SVELTE]: {
     id: FRONTEND_FRAMEWORK.SVELTE,
     label: "SvelteKit",
-    type: PROJECT_TYPE.FRONTEND as ProjectType,
+    type: PROJECT_TYPE.FRONTEND,
     defaultPort: 5173,
     installCommand: "pnpm install",
     devCommand: "pnpm dev",
@@ -202,7 +207,7 @@ export const ADDON_METADATA: Record<AddonName, AddonMetadata> = {
   [ADDON_NAME.BIOME]: {
     id: ADDON_NAME.BIOME,
     name: "Biome",
-    group: "tooling" as AddonGroup,
+    group: "tooling",
     description: "Fast, unified formatter and linter for JavaScript, JSON, and other languages",
     devDependencies: {
       "@biomejs/biome": "^1.9.4",
@@ -216,7 +221,7 @@ export const ADDON_METADATA: Record<AddonName, AddonMetadata> = {
   [ADDON_NAME.HUSKY]: {
     id: ADDON_NAME.HUSKY,
     name: "Husky",
-    group: "tooling" as AddonGroup,
+    group: "tooling",
     description: "Git hooks made easy (commit, push, pre-flight checks)",
     devDependencies: {
       husky: "^9.1.7",
@@ -230,7 +235,7 @@ export const ADDON_METADATA: Record<AddonName, AddonMetadata> = {
   [ADDON_NAME.SKILLS]: {
     id: ADDON_NAME.SKILLS,
     name: "Skills",
-    group: "ai" as AddonGroup,
+    group: "ai",
     description: "Claude Code skills for your framework",
     devDependencies: {},
     scripts: {},
@@ -239,7 +244,7 @@ export const ADDON_METADATA: Record<AddonName, AddonMetadata> = {
   [ADDON_NAME.MCP]: {
     id: ADDON_NAME.MCP,
     name: "MCP",
-    group: "ai" as AddonGroup,
+    group: "ai",
     description: "MCP servers for enhanced AI context",
     devDependencies: {},
     scripts: {},
@@ -263,12 +268,17 @@ export const MCP_CATALOG: McpServerEntry[] = [
 /**
  * Default scaffold configuration for frontend projects
  */
-export const DEFAULT_SCAFFOLD_CONFIG = {
-  runtime: RUNTIME.BUN as Runtime,
-  packageManager: PACKAGE_MANAGER.PNPM as PackageManager,
-  scaffoldMode: SCAFFOLD_MODE.SCAFFOLD as ScaffoldMode,
-  addons: [] as AddonName[],
-} as const;
+export const DEFAULT_SCAFFOLD_CONFIG: {
+  runtime: Runtime;
+  packageManager: PackageManager;
+  scaffoldMode: ScaffoldMode;
+  addons: AddonName[];
+} = {
+  runtime: RUNTIME.BUN,
+  packageManager: PACKAGE_MANAGER.PNPM,
+  scaffoldMode: SCAFFOLD_MODE.SCAFFOLD,
+  addons: [],
+};
 
 /**
  * Skill catalog: curated skills for each framework
@@ -279,7 +289,7 @@ export const DEFAULT_SCAFFOLD_CONFIG = {
  */
 export const SKILLS_DIR = path.join(PKG_ROOT, "skills");
 
-export const SKILL_CATALOG: Record<string, SkillEntry[]> = {
+export const SKILL_CATALOG: Record<SkillCatalogKey, SkillEntry[]> = {
   "common-backend": [
     {
       id: "github-pr",

@@ -17,91 +17,87 @@ import { promptMcpServers } from "./mcp-servers.js";
 import { promptGitInit } from "./git.js";
 import { scaffoldConfigSchema } from "../config.js";
 import { DEFAULT_SCAFFOLD_CONFIG } from "../constants.js";
-import type { ProjectSelection, ScaffoldConfig } from "../types.js";
+import type { ProjectSelection, ScaffoldConfig, Runtime, PackageManager, AddonName, ScaffoldMode } from "../types.js";
 
-/**
- * Collect complete scaffold configuration from user prompts
- * Accepts optional projectName to skip first prompt (for CLI arg)
- */
-export async function collectConfig(
-  projectName?: string
-): Promise<ScaffoldConfig> {
-  console.log(`
- \x1b[1;37m███████╗ █████╗ ███████╗████████╗\x1b[0m
- \x1b[1;37m██╔════╝██╔══██╗██╔════╝╚══██╔══╝\x1b[0m
- \x1b[1;37m█████╗  ███████║███████╗   ██║\x1b[0m
- \x1b[1;37m██╔══╝  ██╔══██║╚════██║   ██║\x1b[0m
- \x1b[1;37m██║     ██║  ██║███████║   ██║\x1b[0m
- \x1b[1;37m╚═╝     ╚═╝  ╚═╝╚══════╝   ╚═╝\x1b[0m
- \x1b[1;37m███████╗████████╗ █████╗  ██████╗██╗  ██╗\x1b[0m
- \x1b[1;37m██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝\x1b[0m
- \x1b[1;37m███████╗   ██║   ███████║██║     █████╔╝\x1b[0m
- \x1b[1;37m╚════██║   ██║   ██╔══██║██║     ██╔═██╗\x1b[0m
- \x1b[1;37m███████║   ██║   ██║  ██║╚██████╗██║  ██╗\x1b[0m
- \x1b[1;37m╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝\x1b[0m
-`);
-  intro("Create Fast Stack");
+interface BackendOptions {
+  framework?: string;
+  scaffoldMode: ScaffoldMode;
+  addons: AddonName[];
+  skills: string[];
+  mcpServers: string[];
+}
 
-  // Step 1: Project name (skip if provided via CLI arg)
-  const name = await promptProjectName(projectName);
+interface FrontendOptions {
+  framework?: string;
+  scaffoldMode: ScaffoldMode;
+  runtime: Runtime;
+  packageManager: PackageManager;
+  addons: AddonName[];
+  skills: string[];
+  mcpServers: string[];
+}
 
-  // Step 2: Select project types (Backend, Frontend)
-  const selectedTypes = await promptProjectTypes();
-
-  // Step 3: Collect framework selection and customization per project type
-  const projects: ProjectSelection[] = [];
-
-  // Backend: framework → scaffold/custom → (custom: addons → sub-prompts)
-  let backendFramework: string | undefined;
-  let backendScaffoldMode: "scaffold" | "custom" = "scaffold";
-  let backendAddons = DEFAULT_SCAFFOLD_CONFIG.addons;
-  let backendSkills: string[] = [];
-  let backendMcpServers: string[] = [];
+async function collectBackendOptions(selectedTypes: string[]): Promise<BackendOptions> {
+  let framework: string | undefined;
+  let scaffoldMode: ScaffoldMode = "scaffold";
+  let addons = DEFAULT_SCAFFOLD_CONFIG.addons;
+  let skills: string[] = [];
+  let mcpServers: string[] = [];
 
   if (selectedTypes.includes("backend")) {
-    backendFramework = await promptBackendFramework();
-    backendScaffoldMode = await promptScaffoldMode();
+    framework = await promptBackendFramework();
+    scaffoldMode = await promptScaffoldMode();
 
-    if (backendScaffoldMode === "custom") {
-      backendAddons = await promptAddons("backend");
+    if (scaffoldMode === "custom") {
+      addons = await promptAddons("backend");
 
-      if (backendAddons.includes("skills")) {
-        backendSkills = await promptSkills(backendFramework, undefined);
+      if (addons.includes("skills")) {
+        skills = await promptSkills(framework, undefined);
       }
-      if (backendAddons.includes("mcp")) {
-        backendMcpServers = await promptMcpServers();
+      if (addons.includes("mcp")) {
+        mcpServers = await promptMcpServers();
       }
     }
   }
 
-  // Frontend: framework → scaffold/custom → (custom: runtime, pkg mgr, addons → sub-prompts)
-  let frontendFramework: string | undefined;
-  let frontendScaffoldMode: "scaffold" | "custom" = "scaffold";
-  let frontendRuntime = DEFAULT_SCAFFOLD_CONFIG.runtime;
-  let frontendPackageManager = DEFAULT_SCAFFOLD_CONFIG.packageManager;
-  let frontendAddons = DEFAULT_SCAFFOLD_CONFIG.addons;
-  let frontendSkills: string[] = [];
-  let frontendMcpServers: string[] = [];
+  return { framework, scaffoldMode, addons, skills, mcpServers };
+}
+
+async function collectFrontendOptions(selectedTypes: string[]): Promise<FrontendOptions> {
+  let framework: string | undefined;
+  let scaffoldMode: ScaffoldMode = "scaffold";
+  let runtime: Runtime = DEFAULT_SCAFFOLD_CONFIG.runtime;
+  let packageManager: PackageManager = DEFAULT_SCAFFOLD_CONFIG.packageManager;
+  let addons = DEFAULT_SCAFFOLD_CONFIG.addons;
+  let skills: string[] = [];
+  let mcpServers: string[] = [];
 
   if (selectedTypes.includes("frontend")) {
-    frontendFramework = await promptFrontendFramework();
-    frontendScaffoldMode = await promptScaffoldMode();
+    framework = await promptFrontendFramework();
+    scaffoldMode = await promptScaffoldMode();
 
-    if (frontendScaffoldMode === "custom") {
-      frontendRuntime = await promptRuntime();
-      frontendPackageManager = await promptPackageManager();
-      frontendAddons = await promptAddons("frontend");
+    if (scaffoldMode === "custom") {
+      runtime = await promptRuntime();
+      packageManager = await promptPackageManager();
+      addons = await promptAddons("frontend");
 
-      if (frontendAddons.includes("skills")) {
-        frontendSkills = await promptSkills(undefined, frontendFramework);
+      if (addons.includes("skills")) {
+        skills = await promptSkills(undefined, framework);
       }
-      if (frontendAddons.includes("mcp")) {
-        frontendMcpServers = await promptMcpServers();
+      if (addons.includes("mcp")) {
+        mcpServers = await promptMcpServers();
       }
     }
   }
 
-  // Step 5: Generate default folder names and confirm
+  return { framework, scaffoldMode, runtime, packageManager, addons, skills, mcpServers };
+}
+
+async function resolveFolderNames(
+  name: string,
+  backendFramework?: string,
+  frontendFramework?: string,
+): Promise<Record<string, string>> {
   const defaultFolderNames: Record<string, string> = {};
   const projectLines: string[] = [];
 
@@ -125,12 +121,9 @@ export async function collectConfig(
     process.exit(0);
   }
 
-  const confirmDefault = userConfirmDefault;
-
-  // Step 6: Custom folder names (if user chose "No")
   const finalFolderNames = { ...defaultFolderNames };
 
-  if (!confirmDefault) {
+  if (!userConfirmDefault) {
     if (backendFramework) {
       const userCustomBackend = await text({
         message: "Backend folder name:",
@@ -160,15 +153,21 @@ export async function collectConfig(
     }
   }
 
-  // Step 7: Git initialization confirmation
-  const initGit = await promptGitInit();
+  return finalFolderNames;
+}
 
-  // Step 8: Build projects array
+function buildProjects(
+  folderNames: Record<string, string>,
+  backendFramework?: string,
+  frontendFramework?: string,
+): ProjectSelection[] {
+  const projects: ProjectSelection[] = [];
+
   if (backendFramework) {
     projects.push({
       type: "backend",
       framework: backendFramework,
-      folderName: finalFolderNames["backend"],
+      folderName: folderNames["backend"],
     });
   }
 
@@ -176,24 +175,59 @@ export async function collectConfig(
     projects.push({
       type: "frontend",
       framework: frontendFramework,
-      folderName: finalFolderNames["frontend"],
+      folderName: folderNames["frontend"],
     });
   }
 
-  // Return complete config (parse applies defaults via schema)
+  return projects;
+}
+
+/**
+ * Collect complete scaffold configuration from user prompts
+ * Accepts optional projectName to skip first prompt (for CLI arg)
+ */
+export async function collectConfig(
+  projectName?: string
+): Promise<ScaffoldConfig> {
+  console.log(`
+ \x1b[1;37m███████╗ █████╗ ███████╗████████╗\x1b[0m
+ \x1b[1;37m██╔════╝██╔══██╗██╔════╝╚══██╔══╝\x1b[0m
+ \x1b[1;37m█████╗  ███████║███████╗   ██║\x1b[0m
+ \x1b[1;37m██╔══╝  ██╔══██║╚════██║   ██║\x1b[0m
+ \x1b[1;37m██║     ██║  ██║███████║   ██║\x1b[0m
+ \x1b[1;37m╚═╝     ╚═╝  ╚═╝╚══════╝   ╚═╝\x1b[0m
+ \x1b[1;37m███████╗████████╗ █████╗  ██████╗██╗  ██╗\x1b[0m
+ \x1b[1;37m██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝\x1b[0m
+ \x1b[1;37m███████╗   ██║   ███████║██║     █████╔╝\x1b[0m
+ \x1b[1;37m╚════██║   ██║   ██╔══██║██║     ██╔═██╗\x1b[0m
+ \x1b[1;37m███████║   ██║   ██║  ██║╚██████╗██║  ██╗\x1b[0m
+ \x1b[1;37m╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝\x1b[0m
+`);
+  intro("Create Fast Stack");
+
+  const name = await promptProjectName(projectName);
+  const selectedTypes = await promptProjectTypes();
+
+  const backend = await collectBackendOptions(selectedTypes);
+  const frontend = await collectFrontendOptions(selectedTypes);
+
+  const folderNames = await resolveFolderNames(name, backend.framework, frontend.framework);
+  const initGit = await promptGitInit();
+  const projects = buildProjects(folderNames, backend.framework, frontend.framework);
+
   return scaffoldConfigSchema.parse({
     projectName: name,
     projects,
     outputDir: process.cwd(),
     initGit,
-    scaffoldMode: frontendScaffoldMode,
-    backendScaffoldMode,
-    runtime: frontendRuntime,
-    packageManager: frontendPackageManager,
-    addons: [...new Set([...backendAddons, ...frontendAddons])],
-    backendSkills,
-    frontendSkills,
-    backendMcpServers,
-    frontendMcpServers,
+    scaffoldMode: frontend.scaffoldMode,
+    backendScaffoldMode: backend.scaffoldMode,
+    runtime: frontend.runtime,
+    packageManager: frontend.packageManager,
+    addons: [...new Set([...backend.addons, ...frontend.addons])],
+    backendSkills: backend.skills,
+    frontendSkills: frontend.skills,
+    backendMcpServers: backend.mcpServers,
+    frontendMcpServers: frontend.mcpServers,
   });
 }

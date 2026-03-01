@@ -47,10 +47,9 @@ export const projectNameSchema = z
   .string()
   .min(1, { error: "Project name required" })
   .max(255, { error: "Project name too long" })
-  .refine(
-    (name) => /^[a-z]([a-z0-9-]*[a-z0-9])?$/.test(name),
-    { message: "Must be lowercase alphanumeric with hyphens, cannot start/end with hyphen" }
-  );
+  .refine((name) => !validateProjectNameUtil(name), {
+    message: "Must be lowercase alphanumeric with hyphens, cannot start/end with hyphen",
+  });
 
 /**
  * Single project selection within a scaffold

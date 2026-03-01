@@ -7,68 +7,37 @@ import Handlebars from "handlebars";
 import isBinaryPath from "is-binary-path";
 import type { TemplateContext } from "../types.js";
 
-/**
- * Initialize Handlebars with custom helpers
- */
-function initializeHandlebars(): void {
-  // Equality check
-  Handlebars.registerHelper("eq", (a: unknown, b: unknown): boolean => {
-    return a === b;
+function createHandlebarsInstance(): typeof Handlebars {
+  const hbs = Handlebars.create();
+
+  hbs.registerHelper("eq", (a: unknown, b: unknown): boolean => a === b);
+  hbs.registerHelper("ne", (a: unknown, b: unknown): boolean => a !== b);
+
+  hbs.registerHelper("and", (...args: unknown[]): boolean => {
+    return args.slice(0, -1).every(Boolean);
   });
 
-  // Inequality check
-  Handlebars.registerHelper("ne", (a: unknown, b: unknown): boolean => {
-    return a !== b;
+  hbs.registerHelper("or", (...args: unknown[]): boolean => {
+    return args.slice(0, -1).some(Boolean);
   });
 
-  // Logical AND (removes last argument which is Handlebars options)
-  Handlebars.registerHelper("and", (...args: unknown[]): boolean => {
-    const values = args.slice(0, -1);
-    return values.every(Boolean);
+  hbs.registerHelper("includes", (arr: unknown, item: unknown): boolean => {
+    return Array.isArray(arr) && arr.includes(item);
   });
 
-  // Logical OR (removes last argument which is Handlebars options)
-  Handlebars.registerHelper("or", (...args: unknown[]): boolean => {
-    const values = args.slice(0, -1);
-    return values.some(Boolean);
-  });
-
-  // Array includes check
-  Handlebars.registerHelper(
-    "includes",
-    (arr: unknown, item: unknown): boolean => {
-      return Array.isArray(arr) && arr.includes(item);
-    }
-  );
-
-  // Array length
-  Handlebars.registerHelper("length", (arr: unknown): number => {
+  hbs.registerHelper("length", (arr: unknown): number => {
     return Array.isArray(arr) ? arr.length : 0;
   });
 
-  // Greater than check
-  Handlebars.registerHelper("gt", (a: unknown, b: unknown): boolean => {
-    return Number(a) > Number(b);
-  });
+  hbs.registerHelper("gt", (a: unknown, b: unknown): boolean => Number(a) > Number(b));
+  hbs.registerHelper("lt", (a: unknown, b: unknown): boolean => Number(a) < Number(b));
+  hbs.registerHelper("gte", (a: unknown, b: unknown): boolean => Number(a) >= Number(b));
+  hbs.registerHelper("lte", (a: unknown, b: unknown): boolean => Number(a) <= Number(b));
 
-  // Less than check
-  Handlebars.registerHelper("lt", (a: unknown, b: unknown): boolean => {
-    return Number(a) < Number(b);
-  });
-
-  // Greater than or equal
-  Handlebars.registerHelper("gte", (a: unknown, b: unknown): boolean => {
-    return Number(a) >= Number(b);
-  });
-
-  // Less than or equal
-  Handlebars.registerHelper("lte", (a: unknown, b: unknown): boolean => {
-    return Number(a) <= Number(b);
-  });
+  return hbs;
 }
 
-// Initialize on module load
-initializeHandlebars();
+const hbs = createHandlebarsInstance();
 
 export class HandlebarsProcessor {
   /**
@@ -76,7 +45,7 @@ export class HandlebarsProcessor {
    */
   compile(template: string, context: TemplateContext): string {
     try {
-      const compiled = Handlebars.compile(template);
+      const compiled = hbs.compile(template);
       return compiled(context);
     } catch (error) {
       throw new Error(`Failed to compile Handlebars template: ${error}`);

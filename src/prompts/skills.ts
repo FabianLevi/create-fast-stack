@@ -5,6 +5,7 @@
 
 import { multiselect, cancel, isCancel } from "@clack/prompts";
 import { SKILL_CATALOG } from "../constants.js";
+import type { SkillCatalogKey } from "../types.js";
 
 /**
  * Build flat skill options from catalog based on framework identifiers
@@ -17,7 +18,7 @@ function buildSkillOptions(
   const options: Array<{ value: string; label: string; hint: string }> = [];
   const seen = new Set<string>();
 
-  const addSkills = (catalogKey: string, category: string) => {
+  const addSkills = (catalogKey: SkillCatalogKey, category: string) => {
     const skills = SKILL_CATALOG[catalogKey];
     if (!skills || skills.length === 0) return;
 
@@ -35,12 +36,12 @@ function buildSkillOptions(
 
   if (backendFramework) {
     addSkills("common-backend", "General");
-    addSkills(backendFramework, backendFramework);
+    addSkills(backendFramework as SkillCatalogKey, backendFramework);
   }
 
   if (frontendFramework) {
     addSkills("common-frontend", "General");
-    addSkills(frontendFramework, frontendFramework);
+    addSkills(frontendFramework as SkillCatalogKey, frontendFramework);
   }
 
   return options;

@@ -6,6 +6,12 @@ import { select, cancel, isCancel } from "@clack/prompts";
 import { BACKEND_FRAMEWORKS } from "../constants.js";
 import type { BackendFramework } from "../types.js";
 
+const VALID_BACKENDS = new Set<string>(Object.keys(BACKEND_FRAMEWORKS));
+
+function isBackendFramework(value: string): value is BackendFramework {
+  return VALID_BACKENDS.has(value);
+}
+
 /**
  * Prompt for backend framework selection
  * Returns selected framework or exits if cancelled
@@ -28,5 +34,11 @@ export async function promptBackendFramework(): Promise<BackendFramework> {
     process.exit(0);
   }
 
-  return userBackendFramework as BackendFramework;
+  const value = String(userBackendFramework);
+  if (!isBackendFramework(value)) {
+    cancel(`Invalid backend framework: ${value}`);
+    process.exit(1);
+  }
+
+  return value;
 }

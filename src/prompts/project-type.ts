@@ -7,6 +7,12 @@ import { customMultiselect, isCancel } from "./custom-multiselect.js";
 import { PROJECT_TYPES, COMING_SOON_TYPES } from "../constants.js";
 import type { ProjectType } from "../types.js";
 
+const VALID_PROJECT_TYPES = new Set<string>(PROJECT_TYPES.map((t) => t.value));
+
+function isProjectType(value: string): value is ProjectType {
+  return VALID_PROJECT_TYPES.has(value);
+}
+
 /**
  * Prompt for project types (Backend, Frontend)
  * Coming soon items shown as dimmed, non-selectable options
@@ -34,5 +40,11 @@ export async function promptProjectTypes(): Promise<ProjectType[]> {
     process.exit(0);
   }
 
-  return userSelectedTypes as ProjectType[];
+  const selected = (userSelectedTypes as string[]).filter(isProjectType);
+  if (selected.length === 0) {
+    cancel("No valid project type selected.");
+    process.exit(1);
+  }
+
+  return selected;
 }
