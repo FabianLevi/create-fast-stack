@@ -1,4 +1,4 @@
-# create-fast-stack
+<img src=".github/banner.svg" alt="FAST STACK" width="700" />
 
 A polyglot CLI scaffolder for spinning up production-ready full-stack projects in seconds. Pick your backend language, pick your frontend framework — get independent, deployable projects with best practices baked in.
 
