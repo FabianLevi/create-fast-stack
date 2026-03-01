@@ -8,7 +8,7 @@ import path from "path";
 import { log, note, outro } from "@clack/prompts";
 import { collectConfig } from "../prompts/index.js";
 import { generateProjects } from "../generator/index.js";
-import { initGitForProjects } from "../helpers/index.js";
+import { initGitForProjects, installSkills, installMcpServers } from "../helpers/index.js";
 import {
   BACKEND_FRAMEWORKS,
   FRONTEND_FRAMEWORKS,
@@ -34,7 +34,6 @@ function printNextSteps(config: ScaffoldConfig, _parentPath: string): void {
   outro(`Done! Created ${config.projectName}/`);
 
   const steps: string[] = [];
-  const pkgManager = detectPackageManager();
 
   for (const project of config.projects) {
     const meta = getFrameworkMeta(project);
@@ -43,15 +42,47 @@ function printNextSteps(config: ScaffoldConfig, _parentPath: string): void {
     const projectPath = path.join(config.projectName, project.folderName);
     const typeLabel = project.type.charAt(0).toUpperCase() + project.type.slice(1);
 
-    // For Node-based frameworks, use detected package manager command
+    // Use configured package manager for frontend projects in custom mode, otherwise use framework default
     let installCmd = meta.installCommand;
-    if ((project.framework === "nestjs" || project.framework === "react-vite" || project.framework === "nextjs") && pkgManager !== "npm") {
-      installCmd = pkgManager === "pnpm" ? "pnpm install" : pkgManager === "bun" ? "bun install" : pkgManager === "yarn" ? "yarn install" : "npm install";
+    let devCmd = meta.devCommand;
+    if (project.type === "frontend" && config.scaffoldMode === "custom") {
+      installCmd = getInstallCommand(config.packageManager);
+      devCmd = getDevCommand(config.packageManager, meta.devCommand);
     }
 
     steps.push(`${typeLabel}:`);
     steps.push(`  cd ${projectPath}`);
-    steps.push(`  ${installCmd} && ${meta.devCommand}`);
+    steps.push(`  ${installCmd} && ${devCmd}`);
+    steps.push("");
+  }
+
+  // Show custom configuration summary
+  const hasCustom = config.scaffoldMode === "custom" || config.backendScaffoldMode === "custom";
+  const totalSkills = config.backendSkills.length + config.frontendSkills.length;
+  const totalMcp = config.backendMcpServers.length + config.frontendMcpServers.length;
+  const hasExtras = hasCustom || totalSkills > 0 || totalMcp > 0;
+  if (hasExtras) {
+    steps.push(`Configuration:`);
+    if (config.scaffoldMode === "custom") {
+      steps.push(`  Runtime: ${config.runtime}`);
+      steps.push(`  Package Manager: ${config.packageManager}`);
+      const addonLabels = config.addons.length > 0
+        ? config.addons.join(", ")
+        : "none";
+      steps.push(`  Addons: ${addonLabels}`);
+    }
+    if (config.backendSkills.length > 0) {
+      steps.push(`  Backend Skills: ${config.backendSkills.length} installed`);
+    }
+    if (config.frontendSkills.length > 0) {
+      steps.push(`  Frontend Skills: ${config.frontendSkills.length} installed`);
+    }
+    if (config.backendMcpServers.length > 0) {
+      steps.push(`  Backend MCP: ${config.backendMcpServers.join(", ")}`);
+    }
+    if (config.frontendMcpServers.length > 0) {
+      steps.push(`  Frontend MCP: ${config.frontendMcpServers.join(", ")}`);
+    }
     steps.push("");
   }
 
@@ -70,6 +101,43 @@ function printNextSteps(config: ScaffoldConfig, _parentPath: string): void {
 
   if (steps.length > 0) {
     note(steps.join("\n"), "Next steps:");
+  }
+}
+
+/**
+ * Get install command for a package manager
+ */
+function getInstallCommand(packageManager: string): string {
+  switch (packageManager) {
+    case "npm":
+      return "npm install";
+    case "pnpm":
+      return "pnpm install";
+    case "bun":
+      return "bun install";
+    default:
+      return "npm install";
+  }
+}
+
+/**
+ * Replace the package manager prefix in a dev command
+ * e.g. "pnpm dev" → "bun dev", "pnpm start" → "npm run start"
+ */
+function getDevCommand(packageManager: string, defaultDevCmd: string): string {
+  // Extract the script name from the default command (e.g. "pnpm dev" → "dev")
+  const parts = defaultDevCmd.split(" ");
+  const script = parts[parts.length - 1];
+
+  switch (packageManager) {
+    case "npm":
+      return `npm run ${script}`;
+    case "pnpm":
+      return `pnpm ${script}`;
+    case "bun":
+      return `bun ${script}`;
+    default:
+      return defaultDevCmd;
   }
 }
 
@@ -104,6 +172,29 @@ export async function runCreate(projectName?: string): Promise<void> {
 
     try {
       await generateProjects(config, parentPath);
+
+      // Install skills per project type
+      for (const project of config.projects) {
+        const skills = project.type === "backend"
+          ? config.backendSkills
+          : config.frontendSkills;
+        if (skills.length > 0) {
+          const projectPath = path.join(parentPath, project.folderName);
+          await installSkills([projectPath], skills);
+        }
+      }
+
+      // Install MCP servers per project type
+      for (const project of config.projects) {
+        const servers = project.type === "backend"
+          ? config.backendMcpServers
+          : config.frontendMcpServers;
+        if (servers.length > 0) {
+          const projectPath = path.join(parentPath, project.folderName);
+          await installMcpServers([projectPath], servers);
+        }
+      }
+
       if (config.initGit) {
         await initGitForProjects(parentPath, config.projects, config.initGit);
       }

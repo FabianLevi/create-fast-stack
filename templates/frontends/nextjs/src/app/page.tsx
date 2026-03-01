@@ -25,9 +25,7 @@ const APP_NAME = '{{baseName}}';
 
 export default function Home() {
   const trpc = useTRPC();
-  const { data, isPending, error } = useQuery(
-    trpc.health.check.queryOptions(),
-  );
+  const { data, isPending, error } = useQuery(trpc.health.check.queryOptions());
 
   const status = isPending
     ? 'CHECKING...'

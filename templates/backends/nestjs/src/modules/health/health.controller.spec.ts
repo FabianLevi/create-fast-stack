@@ -17,18 +17,20 @@ describe('HealthController', () => {
   });
 
   describe('health', () => {
-    it('should return health status from service', async () => {
-      const expected = { status: 'ok' };
+    const mockReq = { id: '550e8400-e29b-41d4-a716-446655440000' } as any;
+
+    it('should return health status with request_id from service', async () => {
+      const expected = { status: 'ok', request_id: mockReq.id };
       jest.spyOn(service, 'getHealth').mockReturnValue(expected);
 
-      const result = await controller.health();
+      const result = await controller.health(mockReq);
       expect(result).toEqual(expected);
     });
 
-    it('should call healthService.getHealth', async () => {
+    it('should call healthService.getHealth with request id', async () => {
       const spy = jest.spyOn(service, 'getHealth');
-      await controller.health();
-      expect(spy).toHaveBeenCalledTimes(1);
+      await controller.health(mockReq);
+      expect(spy).toHaveBeenCalledWith(mockReq.id);
     });
   });
 });

@@ -12,6 +12,21 @@ export type BackendFramework = "python-fastapi" | "go-chi" | "nestjs" | "rust-ax
 // Frontend framework identifiers
 export type FrontendFramework = "react-vite" | "nextjs" | "angular";
 
+// Runtime environment identifiers
+export type Runtime = "bun" | "node";
+
+// Package manager identifiers
+export type PackageManager = "npm" | "pnpm" | "bun";
+
+// Scaffold mode selection
+export type ScaffoldMode = "scaffold" | "custom";
+
+// Addon identifiers
+export type AddonName = "biome" | "husky" | "skills" | "mcp";
+
+// Addon categories
+export type AddonGroup = "tooling" | "ai";
+
 /**
  * Framework metadata for prompts and post-scaffold output
  */
@@ -22,6 +37,65 @@ export interface FrameworkMeta {
   defaultPort: number;
   installCommand: string;
   devCommand: string;
+}
+
+/**
+ * Addon metadata for prompt display and injection
+ */
+export interface AddonMetadata {
+  id: AddonName;
+  name: string;
+  group: AddonGroup;
+  description: string;
+  devDependencies: Record<string, string>;
+  scripts: Record<string, string>;
+  configFiles: string[];
+}
+
+/**
+ * Skill catalog entry for Claude skills
+ */
+export interface SkillEntry {
+  id: string;
+  label: string;
+  hint: string;
+}
+
+/**
+ * MCP server catalog entry
+ */
+export interface McpServerEntry {
+  id: string;
+  label: string;
+  hint: string;
+  command: string;
+  args: string[];
+}
+
+/**
+ * Template context for file generation and substitution
+ */
+export interface TemplateContext {
+  projectName: string;
+  baseName: string;
+  framework: string;
+  runtime: Runtime;
+  packageManager: PackageManager;
+  selectedAddons: AddonName[];
+  isCustom: boolean;
+}
+
+/**
+ * Frontend project selection with customization options
+ */
+export interface FrontendProjectSelection {
+  type: "frontend";
+  framework: FrontendFramework;
+  folderName: string;
+  scaffoldMode: ScaffoldMode;
+  runtime?: Runtime;
+  packageManager?: PackageManager;
+  addons?: AddonName[];
 }
 
 // Re-export schema-derived types from config.ts
@@ -38,4 +112,10 @@ export {
   BACKEND_FRAMEWORKS,
   FRONTEND_FRAMEWORKS,
   PROJECT_TYPES,
+  RUNTIME,
+  PACKAGE_MANAGER,
+  SCAFFOLD_MODE,
+  ADDON_NAME,
+  ADDON_METADATA,
+  DEFAULT_SCAFFOLD_CONFIG,
 } from "./constants.js";

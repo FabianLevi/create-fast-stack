@@ -7,7 +7,7 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "lint": "ng lint",
+    "lint": "eslint .",
     "test": "vitest",
     "test:run": "vitest run"
   },
@@ -29,6 +29,7 @@
     "@angular/cli": "^19.2.0",
     "@angular/compiler-cli": "^19.2.0",
     "@tailwindcss/postcss": "^4.1.0",
+    "@eslint/js": "^9.30.0",
     "angular-eslint": "^19.3.0",
     "autoprefixer": "^10.4.0",
     "eslint": "^9.32.0",

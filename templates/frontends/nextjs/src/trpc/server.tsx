@@ -1,10 +1,10 @@
-import "server-only";
+import 'server-only';
 
-import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
-import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { cache } from "react";
-import { makeQueryClient } from "./query-client";
-import { appRouter } from "@/server/routers";
+import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query';
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import { cache } from 'react';
+import { makeQueryClient } from './query-client';
+import { appRouter } from '@/server/routers';
 
 export const getQueryClient = cache(makeQueryClient);
 

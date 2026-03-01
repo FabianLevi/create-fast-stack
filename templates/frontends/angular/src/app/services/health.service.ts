@@ -13,8 +13,6 @@ export class HealthService {
   private http = inject(HttpClient);
 
   check(): Observable<HealthResponse> {
-    return this.http.get<HealthResponse>(
-      `${environment.backendUrl}/health`,
-    );
+    return this.http.get<HealthResponse>(`${environment.backendUrl}/health`);
   }
 }

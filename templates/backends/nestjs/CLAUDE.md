@@ -115,4 +115,4 @@ Pino auto-logs all HTTP requests with request ID. In develop mode, logs are pret
 
 ## Graceful Shutdown
 
-`enableShutdownHooks()` handles SIGTERM/SIGINT for clean container/k8s deploys. Health check at `GET /health` for readiness probes.
+`enableShutdownHooks()` handles SIGTERM/SIGINT for clean container/k8s deploys. Health check at `GET /health` returns `{ "status": "ok", "request_id": "uuid" }` for readiness probes.

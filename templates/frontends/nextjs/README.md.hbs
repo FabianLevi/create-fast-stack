@@ -1,0 +1,42 @@
+# {{projectName}}
+
+Next.js frontend template for fast stack development.
+
+## Quick Start
+
+```bash
+{{#if (eq packageManager "npm")}}npm install
+npm run dev{{else if (eq packageManager "bun")}}bun install
+bun run dev{{else}}pnpm install
+pnpm dev{{/if}}
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser. The frontend will automatically fetch from the backend at `http://localhost:8000/health`.
+
+## Environment Variables
+
+Create a `.env.local` file in the project root:
+
+```
+NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+```
+
+## Scripts
+
+{{#if (eq packageManager "npm")}}- `npm run dev` — Start development server
+- `npm run build` — Build for production
+- `npm start` — Start production server
+- `npm run lint` — Run {{#if (includes selectedAddons "biome")}}Biome{{else}}linter{{/if}}{{else if (eq packageManager "bun")}}- `bun run dev` — Start development server
+- `bun run build` — Build for production
+- `bun start` — Start production server
+- `bun run lint` — Run {{#if (includes selectedAddons "biome")}}Biome{{else}}linter{{/if}}{{else}}- `pnpm dev` — Start development server
+- `pnpm build` — Build for production
+- `pnpm start` — Start production server
+- `pnpm lint` — Run {{#if (includes selectedAddons "biome")}}Biome{{else}}linter{{/if}}{{/if}}
+
+## Stack
+
+- Next.js 15
+- React 19
+- TypeScript
+- App Router

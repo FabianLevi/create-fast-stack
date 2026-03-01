@@ -8,7 +8,15 @@ import { promptProjectName } from "./project-name.js";
 import { promptProjectTypes } from "./project-type.js";
 import { promptBackendFramework } from "./backend.js";
 import { promptFrontendFramework } from "./frontend.js";
+import { promptScaffoldMode } from "./scaffold-mode.js";
+import { promptRuntime } from "./runtime.js";
+import { promptPackageManager } from "./package-manager.js";
+import { promptAddons } from "./addons.js";
+import { promptSkills } from "./skills.js";
+import { promptMcpServers } from "./mcp-servers.js";
 import { promptGitInit } from "./git.js";
+import { scaffoldConfigSchema } from "../config.js";
+import { DEFAULT_SCAFFOLD_CONFIG } from "../constants.js";
 import type { ProjectSelection, ScaffoldConfig } from "../types.js";
 
 /**
@@ -40,22 +48,60 @@ export async function collectConfig(
   // Step 2: Select project types (Backend, Frontend)
   const selectedTypes = await promptProjectTypes();
 
-  // Step 3: Collect framework selection for each type
+  // Step 3: Collect framework selection and customization per project type
   const projects: ProjectSelection[] = [];
 
-  // Backend framework selection (if Backend selected)
+  // Backend: framework → scaffold/custom → (custom: addons → sub-prompts)
   let backendFramework: string | undefined;
+  let backendScaffoldMode: "scaffold" | "custom" = "scaffold";
+  let backendAddons = DEFAULT_SCAFFOLD_CONFIG.addons;
+  let backendSkills: string[] = [];
+  let backendMcpServers: string[] = [];
+
   if (selectedTypes.includes("backend")) {
     backendFramework = await promptBackendFramework();
+    backendScaffoldMode = await promptScaffoldMode();
+
+    if (backendScaffoldMode === "custom") {
+      backendAddons = await promptAddons("backend");
+
+      if (backendAddons.includes("skills")) {
+        backendSkills = await promptSkills(backendFramework, undefined);
+      }
+      if (backendAddons.includes("mcp")) {
+        backendMcpServers = await promptMcpServers();
+      }
+    }
   }
 
-  // Frontend framework selection (if Frontend selected)
+  // Frontend: framework → scaffold/custom → (custom: runtime, pkg mgr, addons → sub-prompts)
   let frontendFramework: string | undefined;
+  let frontendScaffoldMode: "scaffold" | "custom" = "scaffold";
+  let frontendRuntime = DEFAULT_SCAFFOLD_CONFIG.runtime;
+  let frontendPackageManager = DEFAULT_SCAFFOLD_CONFIG.packageManager;
+  let frontendAddons = DEFAULT_SCAFFOLD_CONFIG.addons;
+  let frontendSkills: string[] = [];
+  let frontendMcpServers: string[] = [];
+
   if (selectedTypes.includes("frontend")) {
     frontendFramework = await promptFrontendFramework();
+    frontendScaffoldMode = await promptScaffoldMode();
+
+    if (frontendScaffoldMode === "custom") {
+      frontendRuntime = await promptRuntime();
+      frontendPackageManager = await promptPackageManager();
+      frontendAddons = await promptAddons("frontend");
+
+      if (frontendAddons.includes("skills")) {
+        frontendSkills = await promptSkills(undefined, frontendFramework);
+      }
+      if (frontendAddons.includes("mcp")) {
+        frontendMcpServers = await promptMcpServers();
+      }
+    }
   }
 
-  // Step 4: Generate default folder names and confirm
+  // Step 5: Generate default folder names and confirm
   const defaultFolderNames: Record<string, string> = {};
   const projectLines: string[] = [];
 
@@ -81,7 +127,7 @@ export async function collectConfig(
 
   const confirmDefault = userConfirmDefault;
 
-  // Step 5: Custom folder names (if user chose "No")
+  // Step 6: Custom folder names (if user chose "No")
   const finalFolderNames = { ...defaultFolderNames };
 
   if (!confirmDefault) {
@@ -114,10 +160,10 @@ export async function collectConfig(
     }
   }
 
-  // Step 6: Git initialization confirmation
+  // Step 7: Git initialization confirmation
   const initGit = await promptGitInit();
 
-  // Step 7: Build projects array
+  // Step 8: Build projects array
   if (backendFramework) {
     projects.push({
       type: "backend",
@@ -134,11 +180,20 @@ export async function collectConfig(
     });
   }
 
-  // Return complete config
-  return {
+  // Return complete config (parse applies defaults via schema)
+  return scaffoldConfigSchema.parse({
     projectName: name,
     projects,
     outputDir: process.cwd(),
     initGit,
-  };
+    scaffoldMode: frontendScaffoldMode,
+    backendScaffoldMode,
+    runtime: frontendRuntime,
+    packageManager: frontendPackageManager,
+    addons: [...new Set([...backendAddons, ...frontendAddons])],
+    backendSkills,
+    frontendSkills,
+    backendMcpServers,
+    frontendMcpServers,
+  });
 }

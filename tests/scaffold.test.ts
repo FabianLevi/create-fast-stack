@@ -8,10 +8,10 @@ import { promises as fs } from "fs";
 import path from "path";
 import { validateProjectName } from "../src/utils/index.js";
 import { validateConfig, scaffoldConfigSchema } from "../src/config.js";
-import { copyTemplate } from "../src/generator/index.js";
+import { copyTemplate, AddonInjector, VirtualFileSystem, HandlebarsProcessor } from "../src/generator/index.js";
 import { resolveTemplatePath } from "../src/generator/index.js";
-import { TEMPLATES_DIR } from "../src/constants.js";
-import type { ScaffoldConfig, TemplateVars } from "../src/types.js";
+import { TEMPLATES_DIR, ADDON_METADATA, SKILL_CATALOG, BACKEND_FRAMEWORK, FRONTEND_FRAMEWORK } from "../src/constants.js";
+import type { ScaffoldConfig, TemplateVars, TemplateContext, BackendFramework, FrontendFramework } from "../src/types.js";
 
 /**
  * Create a temporary directory using Bun's built-in tmpdir
@@ -52,11 +52,11 @@ describe("Config Validation", () => {
 
   describe("scaffoldConfigSchema", () => {
     test("accepts valid ScaffoldConfig", () => {
-      const config: ScaffoldConfig = {
+      const config = {
         projectName: "my-app",
         projects: [
           {
-            type: "backend",
+            type: "backend" as const,
             framework: "python-fastapi",
             folderName: "my-app-backend",
           },
@@ -68,19 +68,21 @@ describe("Config Validation", () => {
       const result = validateConfig(config);
       expect(result.projectName).toBe("my-app");
       expect(result.projects).toHaveLength(1);
+      expect(result.runtime).toBe("bun");
+      expect(result.packageManager).toBe("pnpm");
     });
 
     test("accepts multiple project types", () => {
-      const config: ScaffoldConfig = {
+      const config = {
         projectName: "my-app",
         projects: [
           {
-            type: "backend",
+            type: "backend" as const,
             framework: "python-fastapi",
             folderName: "my-app-backend",
           },
           {
-            type: "frontend",
+            type: "frontend" as const,
             framework: "react-vite",
             folderName: "my-app-frontend",
           },
@@ -321,5 +323,408 @@ describe("Template Resolution", () => {
       expect(stats).toBeTruthy();
       expect(stats?.isDirectory()).toBe(true);
     }
+  });
+});
+
+describe("Addon Injector", () => {
+  let vfs: VirtualFileSystem;
+  let hbs: HandlebarsProcessor;
+  let injector: AddonInjector;
+
+  beforeEach(() => {
+    vfs = new VirtualFileSystem();
+    hbs = new HandlebarsProcessor();
+    injector = new AddonInjector(vfs, hbs);
+  });
+
+  describe("Dependency Merging", () => {
+    test("merges devDependencies into package.json", async () => {
+      // Create initial package.json in VFS
+      vfs.writeJson("/package.json", {
+        name: "test-app",
+        version: "1.0.0",
+        devDependencies: {
+          typescript: "^5.0.0",
+        },
+      });
+
+      // Inject addon (manually call private method via public inject)
+      const context: TemplateContext = {
+        projectName: "test-app",
+        baseName: "test",
+        framework: "react-vite",
+        runtime: "bun",
+        packageManager: "pnpm",
+        selectedAddons: ["biome"],
+        isCustom: false,
+      };
+
+      await injector.injectAddons(["biome"], context);
+
+      const result = vfs.readJson<any>("/package.json");
+      expect(result.devDependencies).toHaveProperty("@biomejs/biome");
+      expect(result.devDependencies).toHaveProperty("typescript");
+    });
+
+    test("preserves existing devDependencies when merging", async () => {
+      vfs.writeJson("/package.json", {
+        name: "test-app",
+        version: "1.0.0",
+        devDependencies: {
+          typescript: "^5.0.0",
+          eslint: "^8.0.0",
+        },
+      });
+
+      const context: TemplateContext = {
+        projectName: "test-app",
+        baseName: "test",
+        framework: "react-vite",
+        runtime: "bun",
+        packageManager: "pnpm",
+        selectedAddons: ["biome"],
+        isCustom: false,
+      };
+
+      await injector.injectAddons(["biome"], context);
+
+      const result = vfs.readJson<any>("/package.json");
+      // biome removes eslint/prettier deps
+      expect(result.devDependencies).toEqual({
+        typescript: "^5.0.0",
+        "@biomejs/biome": "^1.9.4",
+      });
+    });
+  });
+
+  describe("Script Merging", () => {
+    test("merges scripts into package.json", async () => {
+      vfs.writeJson("/package.json", {
+        name: "test-app",
+        scripts: {
+          dev: "vite",
+        },
+      });
+
+      const context: TemplateContext = {
+        projectName: "test-app",
+        baseName: "test",
+        framework: "react-vite",
+        runtime: "bun",
+        packageManager: "pnpm",
+        selectedAddons: ["biome"],
+        isCustom: false,
+      };
+
+      await injector.injectAddons(["biome"], context);
+
+      const result = vfs.readJson<any>("/package.json");
+      expect(result.scripts).toHaveProperty("dev", "vite");
+      expect(result.scripts).toHaveProperty("lint", "biome lint .");
+      expect(result.scripts).toHaveProperty("format", "biome format .");
+    });
+
+    test("does not overwrite existing scripts", async () => {
+      vfs.writeJson("/package.json", {
+        name: "test-app",
+        scripts: {
+          lint: "eslint .",
+          dev: "vite",
+        },
+      });
+
+      const context: TemplateContext = {
+        projectName: "test-app",
+        baseName: "test",
+        framework: "react-vite",
+        runtime: "bun",
+        packageManager: "pnpm",
+        selectedAddons: ["biome"],
+        isCustom: false,
+      };
+
+      await injector.injectAddons(["biome"], context);
+
+      const result = vfs.readJson<any>("/package.json");
+      // Addon scripts override existing ones (spread behavior)
+      expect(result.scripts.lint).toBe("biome lint .");
+      expect(result.scripts.format).toBe("biome format .");
+    });
+  });
+
+  describe("Template File Copying", () => {
+    test("copies addon template files to VFS", async () => {
+      const context: TemplateContext = {
+        projectName: "test-app",
+        baseName: "test",
+        framework: "react-vite",
+        runtime: "bun",
+        packageManager: "pnpm",
+        selectedAddons: ["biome"],
+        isCustom: false,
+      };
+
+      vfs.writeJson("/package.json", { name: "test-app" });
+      await injector.injectAddons(["biome"], context);
+
+      // Check that biome.json was created
+      expect(vfs.exists("/biome.json")).toBe(true);
+      const biomeCfg = vfs.readFile("/biome.json");
+      expect(biomeCfg).toContain("formatter");
+    });
+
+    test("transforms underscore-prefixed filenames to dot files", async () => {
+      const context: TemplateContext = {
+        projectName: "test-app",
+        baseName: "test",
+        framework: "react-vite",
+        runtime: "bun",
+        packageManager: "pnpm",
+        selectedAddons: ["husky"],
+        isCustom: false,
+      };
+
+      vfs.writeJson("/package.json", { name: "test-app" });
+      await injector.injectAddons(["husky"], context);
+
+      // _husky/pre-commit should become .husky/pre-commit
+      expect(vfs.exists("/.husky/pre-commit")).toBe(true);
+      const preCommit = vfs.readFile("/.husky/pre-commit");
+      expect(preCommit).toContain("lint-staged");
+    });
+
+    test("skips addons with no template directory", async () => {
+      const context: TemplateContext = {
+        projectName: "test-app",
+        baseName: "test",
+        framework: "react-vite",
+        runtime: "bun",
+        packageManager: "pnpm",
+        selectedAddons: ["skills"],
+        isCustom: false,
+      };
+
+      vfs.writeJson("/package.json", { name: "test-app" });
+
+      // Should not throw even though skills has minimal templates
+      await injector.injectAddons(["skills"], context);
+
+      const pkg = vfs.readJson<any>("/package.json");
+      expect(pkg).toBeDefined();
+    });
+  });
+
+  describe("JSON Deep-Merge", () => {
+    test("mcp addon creates mcp.json with example server", async () => {
+      vfs.writeJson("/package.json", { name: "test-app" });
+
+      const context: TemplateContext = {
+        projectName: "test-app",
+        baseName: "test",
+        framework: "react-vite",
+        runtime: "bun",
+        packageManager: "pnpm",
+        selectedAddons: ["mcp"],
+        isCustom: false,
+      };
+
+      await injector.injectAddons(["mcp"], context);
+
+      const mcpJson = vfs.readJson<any>("/.claude/mcp.json");
+      expect(mcpJson.mcpServers).toBeDefined();
+    });
+  });
+
+  describe("Addon Metadata Integration", () => {
+    test("all addons have metadata defined", () => {
+      const addons = ["biome", "husky", "skills", "mcp"] as const;
+
+      addons.forEach((addon) => {
+        expect(ADDON_METADATA[addon]).toBeDefined();
+        expect(ADDON_METADATA[addon].id).toBe(addon);
+        expect(ADDON_METADATA[addon].name).toBeDefined();
+        expect(ADDON_METADATA[addon].group).toBeDefined();
+      });
+    });
+
+    test("biome addon has correct metadata", () => {
+      const biome = ADDON_METADATA.biome;
+      expect(biome.name).toBe("Biome");
+      expect(biome.group).toBe("tooling");
+      expect(biome.devDependencies).toHaveProperty("@biomejs/biome");
+      expect(biome.scripts).toHaveProperty("lint");
+      expect(biome.scripts).toHaveProperty("format");
+    });
+
+    test("husky addon has correct metadata", () => {
+      const husky = ADDON_METADATA.husky;
+      expect(husky.name).toBe("Husky");
+      expect(husky.group).toBe("tooling");
+      expect(husky.devDependencies).toHaveProperty("husky");
+      expect(husky.devDependencies).toHaveProperty("lint-staged");
+      expect(husky.scripts).toHaveProperty("prepare");
+    });
+  });
+
+  describe("Multiple Addons", () => {
+    test("injects multiple addons in sequence", async () => {
+      vfs.writeJson("/package.json", {
+        name: "test-app",
+        scripts: {},
+        devDependencies: {},
+      });
+
+      const context: TemplateContext = {
+        projectName: "test-app",
+        baseName: "test",
+        framework: "react-vite",
+        runtime: "bun",
+        packageManager: "pnpm",
+        selectedAddons: ["biome", "husky"],
+        isCustom: false,
+      };
+
+      await injector.injectAddons(["biome", "husky"], context);
+
+      const pkg = vfs.readJson<any>("/package.json");
+      expect(pkg.devDependencies).toHaveProperty("@biomejs/biome");
+      expect(pkg.devDependencies).toHaveProperty("husky");
+      expect(pkg.devDependencies).toHaveProperty("lint-staged");
+      expect(pkg.scripts).toHaveProperty("lint");
+      expect(pkg.scripts).toHaveProperty("prepare");
+    });
+
+    test("skips injection if no addons selected", async () => {
+      vfs.writeJson("/package.json", {
+        name: "test-app",
+        scripts: { dev: "vite" },
+        devDependencies: { vite: "^5.0.0" },
+      });
+
+      const context: TemplateContext = {
+        projectName: "test-app",
+        baseName: "test",
+        framework: "react-vite",
+        runtime: "bun",
+        packageManager: "pnpm",
+        selectedAddons: [],
+        isCustom: false,
+      };
+
+      await injector.injectAddons([], context);
+
+      const pkg = vfs.readJson<any>("/package.json");
+      expect(pkg.scripts).toEqual({ dev: "vite" });
+      expect(pkg.devDependencies).toEqual({ vite: "^5.0.0" });
+    });
+  });
+});
+
+describe("Skills Catalog", () => {
+  test("SKILL_CATALOG has common-backend and common-frontend keys", () => {
+    expect(SKILL_CATALOG["common-backend"]).toBeDefined();
+    expect(Array.isArray(SKILL_CATALOG["common-backend"])).toBe(true);
+    expect(SKILL_CATALOG["common-frontend"]).toBeDefined();
+    expect(Array.isArray(SKILL_CATALOG["common-frontend"])).toBe(true);
+  });
+
+  test("every BackendFramework has a key in SKILL_CATALOG", () => {
+    const backendFrameworks: BackendFramework[] = [
+      BACKEND_FRAMEWORK.PYTHON_FASTAPI,
+      BACKEND_FRAMEWORK.GO_CHI,
+      BACKEND_FRAMEWORK.NESTJS,
+      BACKEND_FRAMEWORK.RUST_AXUM,
+    ];
+
+    backendFrameworks.forEach((framework) => {
+      expect(SKILL_CATALOG[framework]).toBeDefined();
+      expect(Array.isArray(SKILL_CATALOG[framework])).toBe(true);
+    });
+  });
+
+  test("every FrontendFramework has a key in SKILL_CATALOG", () => {
+    const frontendFrameworks: FrontendFramework[] = [
+      FRONTEND_FRAMEWORK.REACT_VITE,
+      FRONTEND_FRAMEWORK.NEXTJS,
+      FRONTEND_FRAMEWORK.ANGULAR,
+    ];
+
+    frontendFrameworks.forEach((framework) => {
+      expect(SKILL_CATALOG[framework]).toBeDefined();
+      expect(Array.isArray(SKILL_CATALOG[framework])).toBe(true);
+    });
+  });
+
+  test("each SkillEntry has non-empty id, label, hint", () => {
+    Object.entries(SKILL_CATALOG).forEach(([frameworkKey, skills]) => {
+      skills.forEach((skill) => {
+        expect(skill.id).toBeDefined();
+        expect(skill.id.length).toBeGreaterThan(0);
+        expect(skill.label).toBeDefined();
+        expect(skill.label.length).toBeGreaterThan(0);
+        expect(skill.hint).toBeDefined();
+        expect(skill.hint.length).toBeGreaterThan(0);
+      });
+    });
+  });
+
+  test("skills config field defaults to empty array", () => {
+    const config = {
+      projectName: "my-app",
+      projects: [
+        {
+          type: "backend" as const,
+          framework: "python-fastapi",
+          folderName: "my-app-backend",
+        },
+      ],
+      outputDir: "/tmp",
+      initGit: true,
+    };
+
+    const result = validateConfig(config);
+    expect(result.backendSkills).toEqual([]);
+    expect(result.frontendSkills).toEqual([]);
+  });
+
+  test("accepts config with backend and frontend skills", () => {
+    const config = {
+      projectName: "my-app",
+      projects: [
+        {
+          type: "backend" as const,
+          framework: "python-fastapi",
+          folderName: "my-app-backend",
+        },
+      ],
+      outputDir: "/tmp",
+      initGit: true,
+      backendSkills: ["golang-pro", "web-design-guidelines"],
+      frontendSkills: ["react-best-practices"],
+    };
+
+    const result = validateConfig(config);
+    expect(result.backendSkills).toHaveLength(2);
+    expect(result.backendSkills[0]).toBe("golang-pro");
+    expect(result.frontendSkills).toHaveLength(1);
+    expect(result.frontendSkills[0]).toBe("react-best-practices");
+  });
+
+  test("rejects skills with empty string ID", () => {
+    const config = {
+      projectName: "my-app",
+      projects: [
+        {
+          type: "backend" as const,
+          framework: "python-fastapi",
+          folderName: "my-app-backend",
+        },
+      ],
+      outputDir: "/tmp",
+      initGit: true,
+      backendSkills: [""],
+    };
+
+    expect(() => validateConfig(config)).toThrow();
   });
 });

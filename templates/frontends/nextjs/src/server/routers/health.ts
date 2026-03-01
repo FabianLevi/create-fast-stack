@@ -1,8 +1,8 @@
-import { publicProcedure, router } from "../trpc";
+import { publicProcedure, router } from '../trpc';
 
 export const healthRouter = router({
   check: publicProcedure.query(async () => {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:8000";
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
     const response = await fetch(`${backendUrl}/health`);
 
     if (!response.ok) {

@@ -1,0 +1,50 @@
+# {{projectName}}
+
+React 19 + Vite frontend template.
+
+## Getting started
+
+Install dependencies:
+```bash
+{{#if (eq packageManager "npm")}}npm install{{else if (eq packageManager "bun")}}bun install{{else}}pnpm install{{/if}}
+```
+
+{{#if (includes selectedAddons "husky")}}Set up git hooks:
+```bash
+{{#if (eq packageManager "npm")}}npm exec husky{{else if (eq packageManager "bun")}}bun exec husky{{else}}pnpm exec husky{{/if}}
+```
+
+{{/if}}Start the development server:
+```bash
+{{#if (eq packageManager "npm")}}npm run dev{{else if (eq packageManager "bun")}}bun run dev{{else}}pnpm dev{{/if}}
+```
+
+Open http://localhost:5173 in your browser.
+
+## Environment
+
+Copy `.env.example` to `.env.local` and update values. Environment variables are validated with Zod at runtime — see `src/environment.ts`.
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+{{#if (eq packageManager "npm")}}| `npm run dev` | Start dev server |
+| `npm run build` | Production build |
+| `npm run preview` | Preview production build |
+| `npm run lint` | Run {{#if (includes selectedAddons "biome")}}Biome{{else}}ESLint{{/if}} |
+| `npm run type-check` | Run TypeScript checks |
+| `npm test` | Run tests (watch mode) |
+| `npm run test:run` | Run tests once |{{else if (eq packageManager "bun")}}| `bun run dev` | Start dev server |
+| `bun run build` | Production build |
+| `bun run preview` | Preview production build |
+| `bun run lint` | Run {{#if (includes selectedAddons "biome")}}Biome{{else}}ESLint{{/if}} |
+| `bun run type-check` | Run TypeScript checks |
+| `bun test` | Run tests (watch mode) |
+| `bun run test:run` | Run tests once |{{else}}| `pnpm dev` | Start dev server |
+| `pnpm build` | Production build |
+| `pnpm preview` | Preview production build |
+| `pnpm lint` | Run {{#if (includes selectedAddons "biome")}}Biome{{else}}ESLint{{/if}} |
+| `pnpm type-check` | Run TypeScript checks |
+| `pnpm test` | Run tests (watch mode) |
+| `pnpm test:run` | Run tests once |{{/if}}

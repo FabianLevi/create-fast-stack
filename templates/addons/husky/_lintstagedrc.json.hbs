@@ -1,0 +1,9 @@
+{{#if (includes selectedAddons "biome")}}{
+  "*.{js,ts,jsx,tsx}": "biome check --write",
+  "*.{json,jsonc}": "biome format --write"
+}{{else if (eq framework "nextjs")}}{
+  "*.{js,ts,jsx,tsx}": "next lint --fix --file"
+}{{else}}{
+  "*.{js,ts,jsx,tsx}": ["eslint --fix", "prettier --write"],
+  "*.{json,md,css,html}": "prettier --write"
+}{{/if}}

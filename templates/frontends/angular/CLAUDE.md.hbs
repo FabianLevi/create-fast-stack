@@ -2,16 +2,31 @@
 
 ## Stack
 
-Angular 19, TypeScript 5.7–5.8 (Angular requires <5.9), Tailwind CSS v4 (PostCSS), Vitest + @analogjs/vitest-angular, angular-eslint, Prettier
+Angular 19, TypeScript 5.7–5.8 (Angular requires <5.9), Tailwind CSS v4 (PostCSS), Vitest + @analogjs/vitest-angular{{#if (includes selectedAddons "biome")}}, Biome{{else}}, angular-eslint, Prettier{{/if}}
 
-## Commands
+{{#if isCustom}}## Configuration
 
-- `pnpm install` — install dependencies
+- **Runtime**: {{runtime}}
+- **Package Manager**: {{packageManager}}
+{{#if (gt (length selectedAddons) 0)}}- **Addons**: {{#each selectedAddons}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{/if}}
+{{/if}}## Commands
+
+{{#if (eq packageManager "npm")}}- `npm install` — install dependencies
+- `npm start` — start dev server (port 4200)
+- `npm run build` — build for production (output: `dist/`)
+- `npm run lint` — run {{#if (includes selectedAddons "biome")}}Biome (lint + format){{else}}angular-eslint{{/if}}
+- `npm test` — run tests in watch mode
+- `npm run test:run` — run tests once{{else if (eq packageManager "bun")}}- `bun install` — install dependencies
+- `bun start` — start dev server (port 4200)
+- `bun run build` — build for production (output: `dist/`)
+- `bun run lint` — run {{#if (includes selectedAddons "biome")}}Biome (lint + format){{else}}angular-eslint{{/if}}
+- `bun test` — run tests in watch mode
+- `bun run test:run` — run tests once{{else}}- `pnpm install` — install dependencies
 - `pnpm start` — start dev server (port 4200)
 - `pnpm build` — build for production (output: `dist/`)
-- `pnpm lint` — run angular-eslint
+- `pnpm lint` — run {{#if (includes selectedAddons "biome")}}Biome (lint + format){{else}}angular-eslint{{/if}}
 - `pnpm test` — run tests in watch mode
-- `pnpm test:run` — run tests once
+- `pnpm test:run` — run tests once{{/if}}
 
 ## Project Structure
 

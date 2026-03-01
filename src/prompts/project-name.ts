@@ -18,7 +18,8 @@ export async function promptProjectName(
 
   const userInput = await text({
     message: "Project name:",
-    validate: (value) => {
+    validate: (value: string | undefined) => {
+      if (!value) return "Project name required";
       return validateProjectName(value);
     },
   });

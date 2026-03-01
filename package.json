@@ -1,23 +1,68 @@
 {
   "name": "create-fast-stack",
   "version": "0.1.0",
+  "description": "Polyglot CLI scaffolder — spin up full-stack projects with best practices baked in",
   "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "cli",
+    "scaffolder",
+    "create",
+    "fullstack",
+    "fastapi",
+    "nestjs",
+    "react",
+    "nextjs",
+    "angular",
+    "vite",
+    "go",
+    "rust",
+    "axum"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FabianLevi/create-fast-stack.git"
+  },
   "bin": {
-    "create-fast-stack": "./src/index.ts"
+    "create-fast-stack": "./dist/index.mjs"
+  },
+  "files": [
+    "dist",
+    "templates",
+    "skills"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs"
+    }
+  },
+  "engines": {
+    "node": ">=18.20"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "dev": "bun run src/index.ts",
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
     "test": "bun test",
-    "build": "tsc --noEmit"
+    "test:integration": "bun run tests/integration/run.ts",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
     "@clack/prompts": "^1.0.1",
     "commander": "^12.0.0",
+    "handlebars": "^4.7.8",
+    "is-binary-path": "^2.1.0",
+    "memfs": "^4.14.0",
+    "pathe": "^1.1.2",
     "zod": "^4.0.0"
   },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/node": "^20.10.6",
+    "tsdown": "^0.21.0-beta.2",
     "typescript": "^5.3.3"
   }
 }

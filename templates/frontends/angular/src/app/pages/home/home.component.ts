@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { environment } from '@/environments/environment';
@@ -30,9 +36,18 @@ function pad(value: string, width = 27): string {
   template: `
     <div class="flex min-h-svh flex-col items-center bg-black p-4 pt-[20vh]">
       <div class="container mx-auto flex max-w-6xl flex-col items-center">
-        <pre class="font-mono text-[8px] leading-tight text-white sm:text-base md:text-lg lg:text-xl">{{ titleText }}</pre>
+        <pre
+          class="font-mono text-[8px] leading-tight text-white sm:text-base md:text-lg lg:text-xl"
+          >{{ titleText }}</pre
+        >
 
-        <pre [class]="'mt-6 font-mono text-[8px] leading-tight sm:text-base md:text-lg lg:text-xl ' + statusColor()">{{ statusBox() }}</pre>
+        <pre
+          [class]="
+            'mt-6 font-mono text-[8px] leading-tight sm:text-base md:text-lg lg:text-xl ' +
+            statusColor()
+          "
+          >{{ statusBox() }}</pre
+        >
       </div>
     </div>
   `,

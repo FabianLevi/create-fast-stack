@@ -25,13 +25,18 @@ async function fileExists(filePath: string): Promise<boolean> {
 }
 
 /**
- * Helper to check for unresolved template variables (anything other than {{projectName}} and {{baseName}})
+ * Helper to check for unresolved template variables
+ * Allows {{projectName}} and {{baseName}}, and any valid Handlebars syntax ({{#if}}, {{#each}}, etc.)
  */
 async function hasUnresolvedVars(filePath: string): Promise<boolean> {
   try {
     const ext = path.extname(filePath).toLowerCase();
     // Skip binary files
     if ([".png", ".jpg", ".gif", ".ico", ".woff", ".woff2", ".ttf"].includes(ext)) {
+      return false;
+    }
+    // Skip .hbs files — they are expected to have Handlebars syntax
+    if (ext === ".hbs") {
       return false;
     }
     const content = await fs.readFile(filePath, "utf-8");
@@ -47,6 +52,24 @@ async function hasUnresolvedVars(filePath: string): Promise<boolean> {
     return false;
   } catch {
     return false;
+  }
+}
+
+/**
+ * Helper to check for file existence with fallback to .hbs version
+ */
+async function fileExistsOrHbs(filePath: string): Promise<boolean> {
+  try {
+    await fs.stat(filePath);
+    return true;
+  } catch {
+    // Try .hbs version
+    try {
+      await fs.stat(filePath + ".hbs");
+      return true;
+    } catch {
+      return false;
+    }
   }
 }
 
@@ -439,7 +462,8 @@ describe("Frontend Templates", () => {
 
       for (const file of requiredFiles) {
         const filePath = path.join(templatePath, file);
-        const exists = await fileExists(filePath);
+        // Use fileExistsOrHbs to allow .hbs versions
+        const exists = await fileExistsOrHbs(filePath);
         expect(exists).toBe(true);
       }
     });
@@ -483,7 +507,7 @@ describe("Frontend Templates", () => {
     });
 
     test("App.css imports tailwind", async () => {
-      const content = await readText(path.join(templatePath, "src", "App.css"));
+      const content = await readText(path.join(templatePath, "src", "App.css.hbs"));
       expect(content).toContain("tailwindcss");
     });
 
@@ -537,7 +561,8 @@ describe("Frontend Templates", () => {
 
       for (const file of requiredFiles) {
         const filePath = path.join(templatePath, file);
-        const exists = await fileExists(filePath);
+        // Use fileExistsOrHbs to allow .hbs versions
+        const exists = await fileExistsOrHbs(filePath);
         expect(exists).toBe(true);
       }
     });
@@ -646,7 +671,8 @@ describe("Frontend Templates", () => {
 
       for (const file of requiredFiles) {
         const filePath = path.join(templatePath, file);
-        const exists = await fileExists(filePath);
+        // Use fileExistsOrHbs to allow .hbs versions
+        const exists = await fileExistsOrHbs(filePath);
         expect(exists).toBe(true);
       }
     });
@@ -693,7 +719,7 @@ describe("Frontend Templates", () => {
     });
 
     test("styles.css imports tailwind with theme tokens", async () => {
-      const content = await readText(path.join(templatePath, "src", "styles.css"));
+      const content = await readText(path.join(templatePath, "src", "styles.css.hbs"));
       expect(content).toContain("tailwindcss");
       expect(content).toContain("--color-background");
     });
@@ -810,7 +836,8 @@ describe("Cross-Template Validation", () => {
         frontend,
         "CLAUDE.md"
       );
-      const exists = await fileExists(filePath);
+      // Use fileExistsOrHbs to allow .hbs versions
+      const exists = await fileExistsOrHbs(filePath);
       expect(exists).toBe(true);
     }
   });

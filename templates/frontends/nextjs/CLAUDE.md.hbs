@@ -9,21 +9,34 @@
 - Tailwind CSS v4
 - Geist font
 
-## Getting Started
+{{#if isCustom}}## Configuration
+
+- **Runtime**: {{runtime}}
+- **Package Manager**: {{packageManager}}
+{{#if (gt (length selectedAddons) 0)}}- **Addons**: {{#each selectedAddons}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{/if}}
+{{/if}}## Getting Started
 
 ```bash
-pnpm install
-pnpm dev
+{{#if (eq packageManager "npm")}}npm install
+npm run dev{{else if (eq packageManager "bun")}}bun install
+bun run dev{{else}}pnpm install
+pnpm dev{{/if}}
 ```
 
 Server runs at `http://localhost:3000`.
 
 ## Commands
 
-- `pnpm dev` — Development server with hot reload
+{{#if (eq packageManager "npm")}}- `npm run dev` — Development server with hot reload
+- `npm run build` — Build for production
+- `npm start` — Start production server
+- `npm run lint` — Run {{#if (includes selectedAddons "biome")}}Biome (lint + format){{else}}Next.js linter{{/if}}{{else if (eq packageManager "bun")}}- `bun dev` — Development server with hot reload
+- `bun run build` — Build for production
+- `bun start` — Start production server
+- `bun run lint` — Run {{#if (includes selectedAddons "biome")}}Biome (lint + format){{else}}Next.js linter{{/if}}{{else}}- `pnpm dev` — Development server with hot reload
 - `pnpm build` — Build for production
 - `pnpm start` — Start production server
-- `pnpm lint` — Run Next.js linter
+- `pnpm lint` — Run {{#if (includes selectedAddons "biome")}}Biome (lint + format){{else}}Next.js linter{{/if}}{{/if}}
 
 ## Project Structure
 

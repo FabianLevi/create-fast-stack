@@ -2,18 +2,39 @@
 
 ## Stack
 
-React 19, Vite 7, TypeScript 5.8, Tailwind CSS v4, TanStack Query v5, Vitest, ESLint 9, Prettier
+React 19, Vite 7, TypeScript 5.8, Tailwind CSS v4, TanStack Query v5, Vitest{{#if (includes selectedAddons "biome")}}, Biome{{else}}, ESLint 9, Prettier{{/if}}
+
+{{#if isCustom}}## Configuration
+
+- **Runtime**: {{runtime}}
+- **Package Manager**: {{packageManager}}
+{{#if (gt (length selectedAddons) 0)}}- **Addons**: {{#each selectedAddons}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{/if}}
+{{/if}}
 
 ## Commands
 
-- `pnpm install` — install dependencies
+{{#if (eq packageManager "npm")}}- `npm install` — install dependencies
+- `npm run dev` — start dev server (port 5173)
+- `npm run build` — build for production (output: `dist/`)
+- `npm run preview` — preview production build
+- `npm run lint` — run {{#if (includes selectedAddons "biome")}}Biome (lint + format){{else}}ESLint{{/if}}
+- `npm run type-check` — run TypeScript type checking
+- `npm test` — run tests in watch mode
+- `npm run test:run` — run tests once{{else if (eq packageManager "bun")}}- `bun install` — install dependencies
+- `bun dev` — start dev server (port 5173)
+- `bun run build` — build for production (output: `dist/`)
+- `bun run preview` — preview production build
+- `bun run lint` — run {{#if (includes selectedAddons "biome")}}Biome (lint + format){{else}}ESLint{{/if}}
+- `bun run type-check` — run TypeScript type checking
+- `bun test` — run tests in watch mode
+- `bun run test:run` — run tests once{{else}}- `pnpm install` — install dependencies
 - `pnpm dev` — start dev server (port 5173)
 - `pnpm build` — build for production (output: `dist/`)
 - `pnpm preview` — preview production build
-- `pnpm lint` — run ESLint
+- `pnpm lint` — run {{#if (includes selectedAddons "biome")}}Biome (lint + format){{else}}ESLint{{/if}}
 - `pnpm type-check` — run TypeScript type checking
 - `pnpm test` — run tests in watch mode
-- `pnpm test:run` — run tests once
+- `pnpm test:run` — run tests once{{/if}}
 
 ## Project Structure
 
@@ -48,7 +69,7 @@ API functions are **pure** — no React, no hooks. Testable without a component 
 - Components: PascalCase (e.g. `Header.tsx`, `UserCard.tsx`)
 - Files: kebab-case (e.g. `use-fetch.ts`, `api-client.ts`)
 - Imports: use `@/` path alias (e.g. `import { cn } from "@/lib/utils"`)
-- Import order: builtin > external > internal > parent > sibling > index (enforced by eslint-plugin-perfectionist)
+- Import order: builtin > external > internal > parent > sibling > index{{#if (includes selectedAddons "biome")}} (enforced by Biome){{else}} (enforced by eslint-plugin-perfectionist){{/if}}
 - Env vars: `VITE_*` prefix, validated via `src/environment.ts`
 - Styling: Tailwind classes + `cn()` for conditional merging
 - Type imports: `import type { ... }`
@@ -59,7 +80,7 @@ API functions are **pure** — no React, no hooks. Testable without a component 
 - Early returns, no deep nesting
 - Const types pattern for objects (`as const`)
 - Strict mode enabled
-- Pre-commit hook runs eslint + prettier on staged files
+{{#if (includes selectedAddons "biome")}}- Pre-commit hook runs biome check on staged files{{else}}- Pre-commit hook runs eslint + prettier on staged files{{/if}}
 
 ## Environment
 

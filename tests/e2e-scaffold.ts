@@ -7,7 +7,7 @@
 
 import { parseArgs } from "util";
 import { generateProjects } from "../src/generator/index.js";
-import type { ScaffoldConfig } from "../src/config.js";
+import { scaffoldConfigSchema } from "../src/config.js";
 import type { ProjectSelection } from "../src/config.js";
 
 const { values } = parseArgs({
@@ -51,12 +51,12 @@ if (projects.length === 0) {
   process.exit(1);
 }
 
-const config: ScaffoldConfig = {
+const config = scaffoldConfigSchema.parse({
   projectName: name,
   projects,
   outputDir: out,
   initGit: false,
-};
+});
 
 const parentPath = `${out}/${name}`;
 await Bun.write(parentPath + "/.keep", ""); // ensure parent dir exists

@@ -1,6 +1,11 @@
 /**
  * File copy engine with variable substitution
  * Handles recursive directory copying and {{var}} replacement
+ *
+ * @deprecated Use VirtualFileSystem + HandlebarsProcessor instead
+ * This module is kept for backward compatibility only.
+ * New code should use the VFS + Handlebars pipeline for better
+ * template capabilities and atomic disk writes.
  */
 
 import { promises as fs } from "fs";
