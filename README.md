@@ -13,10 +13,10 @@ A polyglot CLI scaffolder for spinning up production-ready full-stack projects i
 
 ```bash
 # Using bun (recommended)
-bunx create-fast-stack@latest
+bunx create-fs-stack@latest
 
 # Using npx
-npx create-fast-stack@latest
+npx create-fs-stack@latest
 
 # Or run from source
 git clone https://github.com/FabianLevi/create-fast-stack.git

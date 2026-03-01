@@ -1,5 +1,5 @@
 {
-  "name": "create-fast-stack",
+  "name": "create-fs-stack",
   "version": "0.1.0",
   "description": "Polyglot CLI scaffolder — spin up full-stack projects with best practices baked in",
   "type": "module",
@@ -24,7 +24,7 @@
     "url": "https://github.com/FabianLevi/create-fast-stack.git"
   },
   "bin": {
-    "create-fast-stack": "./dist/index.mjs"
+    "create-fs-stack": "./dist/index.mjs"
   },
   "files": [
     "dist",
