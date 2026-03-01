@@ -1,6 +1,6 @@
 {
   "name": "create-fs-stack",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Polyglot CLI scaffolder — spin up full-stack projects with best practices baked in",
   "type": "module",
   "license": "MIT",
