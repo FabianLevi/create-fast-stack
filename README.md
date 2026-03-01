@@ -2,7 +2,7 @@
 
 A polyglot CLI scaffolder for spinning up production-ready full-stack projects in seconds. Pick your backend language, pick your frontend framework — get independent, deployable projects with best practices baked in.
 
-<img src="faststack.gif" alt="create-fast-stack demo" width="700" />
+<video src="faststack.mp4" width="700" autoplay loop muted></video>
 
 ## Philosophy
 
