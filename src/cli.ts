@@ -3,8 +3,12 @@
  * Main flow controller that coordinates commands
  */
 
+import { createRequire } from "node:module";
 import { Command } from "commander";
 import { runCreate } from "./commands/index.js";
+
+const require = createRequire(import.meta.url);
+const { version } = require("../package.json");
 
 /**
  * Create and return the CLI program
@@ -15,7 +19,7 @@ export function createProgram(): Command {
     .description(
       "Polyglot CLI scaffolder — create independent backend + frontend projects"
     )
-    .version("0.1.0")
+    .version(version)
     .argument("[project-name]", "Project name (optional)")
     .action(async (projectName?: string) => {
       await runCreate(projectName);
