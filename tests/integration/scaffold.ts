@@ -17,6 +17,21 @@ import { generateFrontendDockerfile } from "./dockerfile-gen.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DOCKERFILES_DIR = join(__dirname, "dockerfiles");
 
+const DOCKERIGNORE_CONTENTS = [
+  "node_modules",
+  ".git",
+  "dist",
+  ".next",
+  ".angular",
+  "build",
+  "*.tgz",
+  "*.log",
+].join("\n") + "\n";
+
+async function generateDockerignore(projectDir: string): Promise<void> {
+  await writeFile(join(projectDir, ".dockerignore"), DOCKERIGNORE_CONTENTS, "utf-8");
+}
+
 export async function scaffoldCombo(combo: TestCombo): Promise<string> {
   const isCustom = combo.scaffoldMode === "custom";
   const pm = combo.packageManager ?? "pnpm";
@@ -38,6 +53,11 @@ export async function scaffoldCombo(combo: TestCombo): Promise<string> {
       packageManager: pm,
       scaffoldMode: isCustom ? "custom" : "scaffold",
       addons: combo.addons ?? [],
+      backendScaffoldMode: "scaffold" as const,
+      backendSkills: [],
+      frontendSkills: [],
+      backendMcpServers: [],
+      frontendMcpServers: [],
     },
     tmpDir,
     { silent: true }
@@ -58,6 +78,12 @@ export async function scaffoldCombo(combo: TestCombo): Promise<string> {
       join(DOCKERFILES_DIR, `${combo.frontend}.Dockerfile`),
       join(tmpDir, "frontend", "Dockerfile")
     );
+  }
+
+  // Write .dockerignore to reduce build context size
+  await generateDockerignore(join(tmpDir, "frontend"));
+  if (["nestjs"].includes(combo.backend)) {
+    await generateDockerignore(join(tmpDir, "backend"));
   }
 
   return tmpDir;

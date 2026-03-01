@@ -11,6 +11,14 @@ import { VirtualFileSystem } from "../src/generator/virtual-fs.js";
 import { generateProjects, resolveTemplatePath } from "../src/generator/template-engine.js";
 import type { TemplateContext } from "../src/types.js";
 
+const CONFIG_DEFAULTS = {
+  backendScaffoldMode: "scaffold" as const,
+  backendSkills: [] as string[],
+  frontendSkills: [] as string[],
+  backendMcpServers: [] as string[],
+  frontendMcpServers: [] as string[],
+};
+
 async function mkTempDir(): Promise<string> {
   return fs.mkdtemp(path.join(Bun.env.TMPDIR || "/tmp", "gen-test-"));
 }
@@ -417,6 +425,7 @@ describe("generateProjects — production pipeline", () => {
         packageManager: "pnpm",
         scaffoldMode: "scaffold",
         addons: [],
+        ...CONFIG_DEFAULTS,
       },
       tmpDir,
       { silent: true }
@@ -453,6 +462,7 @@ describe("generateProjects — production pipeline", () => {
         packageManager: "pnpm",
         scaffoldMode: "scaffold",
         addons: [],
+        ...CONFIG_DEFAULTS,
       },
       tmpDir,
       { silent: true }
@@ -482,6 +492,7 @@ describe("generateProjects — production pipeline", () => {
         packageManager: "pnpm",
         scaffoldMode: "scaffold",
         addons: [],
+        ...CONFIG_DEFAULTS,
       },
       tmpDir,
       { silent: true }
@@ -509,6 +520,7 @@ describe("generateProjects — production pipeline", () => {
         packageManager: "npm",
         scaffoldMode: "custom",
         addons: [],
+        ...CONFIG_DEFAULTS,
       },
       tmpDir,
       { silent: true }
@@ -533,6 +545,7 @@ describe("generateProjects — production pipeline", () => {
         packageManager: "npm",
         scaffoldMode: "scaffold",
         addons: ["biome"],
+        ...CONFIG_DEFAULTS,
       },
       tmpDir,
       { silent: true }
@@ -560,6 +573,7 @@ describe("generateProjects — production pipeline", () => {
         packageManager: "pnpm",
         scaffoldMode: "custom",
         addons: ["biome"],
+        ...CONFIG_DEFAULTS,
       },
       tmpDir,
       { silent: true }
@@ -590,6 +604,7 @@ describe("generateProjects — production pipeline", () => {
         packageManager: "pnpm",
         scaffoldMode: "scaffold",
         addons: [],
+        ...CONFIG_DEFAULTS,
       },
       tmpDir,
       { silent: true }
@@ -620,6 +635,7 @@ describe("generateProjects — production pipeline", () => {
         packageManager: "pnpm",
         scaffoldMode: "scaffold",
         addons: [],
+        ...CONFIG_DEFAULTS,
       },
       tmpDir,
       { silent: true }
@@ -658,6 +674,7 @@ describe("Context construction — isFrontendCustom isolation", () => {
         packageManager: "npm",
         scaffoldMode: "custom",
         addons: ["biome", "husky"],
+        ...CONFIG_DEFAULTS,
       },
       tmpDir,
       { silent: true }
@@ -691,6 +708,7 @@ describe("Context construction — isFrontendCustom isolation", () => {
         packageManager: "npm",
         scaffoldMode: "custom",
         addons: ["biome"],
+        ...CONFIG_DEFAULTS,
       },
       tmpDir,
       { silent: true }
@@ -723,6 +741,7 @@ describe("Context construction — isFrontendCustom isolation", () => {
         packageManager: "npm",
         scaffoldMode: "scaffold",
         addons: ["biome", "husky", "mcp"],
+        ...CONFIG_DEFAULTS,
       },
       tmpDir,
       { silent: true }
@@ -753,6 +772,7 @@ describe("Context construction — isFrontendCustom isolation", () => {
         packageManager: "npm",
         scaffoldMode: "custom",
         addons: ["biome"],
+        ...CONFIG_DEFAULTS,
       },
       tmpDir,
       { silent: true }
@@ -786,6 +806,7 @@ describe("Context construction — isFrontendCustom isolation", () => {
         packageManager: "pnpm",
         scaffoldMode: "scaffold",
         addons: [],
+        ...CONFIG_DEFAULTS,
       },
       tmpDir,
       { silent: true }
@@ -811,6 +832,7 @@ describe("Context construction — isFrontendCustom isolation", () => {
         packageManager: "pnpm",
         scaffoldMode: "scaffold",
         addons: [],
+        ...CONFIG_DEFAULTS,
       },
       tmpDir,
       { silent: true }
@@ -833,6 +855,7 @@ describe("Context construction — isFrontendCustom isolation", () => {
         packageManager: "pnpm",
         scaffoldMode: "custom",
         addons: ["biome", "husky", "skills", "mcp"],
+        ...CONFIG_DEFAULTS,
       },
       tmpDir,
       { silent: true }
@@ -871,6 +894,7 @@ describe("Context construction — isFrontendCustom isolation", () => {
         packageManager: "bun",
         scaffoldMode: "custom",
         addons: [],
+        ...CONFIG_DEFAULTS,
       },
       tmpDir,
       { silent: true }
