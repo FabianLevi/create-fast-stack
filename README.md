@@ -1,6 +1,10 @@
 <img src=".github/banner.svg" alt="FAST STACK" width="700" />
 
+<br />
+
 A polyglot CLI scaffolder for spinning up production-ready full-stack projects in seconds. Pick your backend language, pick your frontend framework — get independent, deployable projects with best practices baked in.
+
+<br />
 
 https://github.com/user-attachments/assets/fb0645c3-a05b-4f46-ac06-c3b4c1c2bab8
 
