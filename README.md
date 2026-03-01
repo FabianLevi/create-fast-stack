@@ -2,6 +2,8 @@
 
 A polyglot CLI scaffolder for spinning up production-ready full-stack projects in seconds. Pick your backend language, pick your frontend framework — get independent, deployable projects with best practices baked in.
 
+<img src="faststack.gif" alt="create-fast-stack demo" width="700" />
+
 ## Philosophy
 
 - **Polyglot by design**: Mix any backend language with any frontend framework.
